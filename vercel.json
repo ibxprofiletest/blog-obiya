@@ -8,15 +8,15 @@
   ],
   "routes": [
     {
-      "src": "/how-to-turn-dev-to-blogs-into-viral-tweets",
+      "src": "/how-to-turn-dev-to-blogs-into-viral-tweets/",
       "dest": "/how-to-turn-dev-to-blogs-into-viral-tweets.html"
     },
     {
-      "src": "/building-a-whatsapp-ai-health-and-fitness-agent-with-motia-and-openai",
+      "src": "/building-a-whatsapp-ai-health-and-fitness-agent-with-motia-and-openai/",
       "dest": "/building-a-whatsapp-ai-health-and-fitness-agent-with-motia-and-openai.html"
     },
     {
-      "src": "/building-a-lightning-fast-image-resizer-with-motia-and-aws-s3",
+      "src": "/building-a-lightning-fast-image-resizer-with-motia-and-aws-s3/",
       "dest": "/building-a-lightning-fast-image-resizer-with-motia-and-aws-s3.html"
     }
   ]
