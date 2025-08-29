@@ -1200,20 +1200,31 @@ curl -X POST http://localhost:3000/upload-image \
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            backdrop-filter: blur(5px);
+            background: linear-gradient(135deg, rgba(0,0,0,0.6), rgba(0,0,0,0.4));
+            backdrop-filter: blur(10px);
+            animation: backdropFadeIn 0.3s ease-out;
+        }
+
+        @keyframes backdropFadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
         }
 
         .custom-modal-content {
-            background-color: #fff;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
             margin: 5% auto;
-            padding: 30px;
-            border-radius: 12px;
+            padding: 40px;
+            border-radius: 20px;
             width: 90%;
-            max-width: 400px;
+            max-width: 450px;
             position: relative;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            animation: modalSlideIn 0.3s ease-out;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.1);
+            animation: modalSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
         @keyframes modalSlideIn {
@@ -1229,25 +1240,35 @@ curl -X POST http://localhost:3000/upload-image \
 
         .custom-modal-close {
             position: absolute;
-            right: 20px;
-            top: 20px;
-            font-size: 28px;
-            font-weight: bold;
+            right: 25px;
+            top: 25px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            color: #666;
-            transition: color 0.2s;
+            color: #64748b;
+            transition: all 0.2s ease;
+            font-size: 18px;
+            font-weight: 400;
         }
 
         .custom-modal-close:hover {
-            color: #000;
+            background: rgba(0,0,0,0.1);
+            color: #1e293b;
+            transform: scale(1.1);
         }
 
         .modal-title {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 20px;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 30px;
             text-align: center;
-            color: #333;
+            color: #0f172a !important;
+            letter-spacing: -0.025em;
         }
 
         .modal-form {
@@ -1259,101 +1280,211 @@ curl -X POST http://localhost:3000/upload-image \
         .form-group {
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 8px;
         }
 
         .form-group label {
-            font-weight: 500;
-            color: #555;
+            font-weight: 600;
+            color: #1e293b !important;
             font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .form-group input {
-            padding: 12px 16px;
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
+            padding: 16px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
             font-size: 16px;
-            transition: border-color 0.2s;
+            transition: all 0.2s ease;
+            color: #0f172a !important;
+            background-color: #ffffff !important;
+            font-weight: 500;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
         .form-group input:focus {
             outline: none;
-            border-color: #2f7eff;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .form-group input::placeholder {
+            color: #94a3b8 !important;
         }
 
         .modal-button {
-            background: linear-gradient(135deg, #2f7eff, #1e40af);
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
             color: white;
-            padding: 14px 20px;
+            padding: 16px 24px;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            margin-top: 10px;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
         }
 
         .modal-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(47, 126, 255, 0.3);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+        }
+
+        .modal-button:hover::before {
+            left: 100%;
+        }
+
+        .modal-button:active {
+            transform: translateY(0);
         }
 
         .modal-footer {
             text-align: center;
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #e1e5e9;
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .modal-footer p {
+            color: #64748b;
+            font-size: 14px;
+            margin: 0;
         }
 
         .modal-footer a {
-            color: #2f7eff;
+            color: #3b82f6;
             text-decoration: none;
-            font-weight: 500;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            padding: 4px 8px;
+            border-radius: 6px;
         }
 
         .modal-footer a:hover {
-            text-decoration: underline;
+            background: rgba(59, 130, 246, 0.1);
+            color: #1d4ed8;
         }
 
         .success-message {
-            background-color: #d1fae5;
-            color: #065f46;
-            padding: 15px;
-            border-radius: 8px;
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+            color: #064e3b;
+            padding: 20px;
+            border-radius: 16px;
             text-align: center;
-            margin-top: 15px;
+            margin-top: 20px;
             border: 1px solid #10b981;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .success-message::before {
+            content: '✓';
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 24px;
+            color: #10b981;
+            font-weight: bold;
         }
 
         .error-message {
-            background-color: #fee2e2;
-            color: #991b1b;
-            padding: 15px;
-            border-radius: 8px;
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
+            color: #7f1d1d;
+            padding: 20px;
+            border-radius: 16px;
             text-align: center;
-            margin-top: 15px;
+            margin-top: 20px;
             border: 1px solid #dc2626;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
+        }
+
+        /* Notification System */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            transform: translateX(400px);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .notification.info {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
         }
     </style>
 
     <!-- Custom Modal JavaScript -->
     <script>
+        // Notification system
+        function showNotification(message, type = 'success', duration = 4000) {
+            // Remove existing notifications
+            const existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(notification => notification.remove());
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Trigger animation
+            setTimeout(() => notification.classList.add('show'), 100);
+            
+            // Auto remove
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, duration);
+        }
+
         function openCustomModal(type) {
             const modal = document.getElementById('customModal');
             const modalContent = document.getElementById('modalContent');
             
             if (type === 'signin') {
                 modalContent.innerHTML = `
-                    <h2 class="modal-title">Sign In</h2>
+                    <h2 class="modal-title">Welcome Back</h2>
                     <form class="modal-form" onsubmit="handleSignin(event)">
                         <div class="form-group">
-                            <label for="signin-email">Email</label>
-                            <input type="email" id="signin-email" required>
+                            <label for="signin-email">Email Address</label>
+                            <input type="email" id="signin-email" placeholder="Enter your email" required>
                         </div>
                         <div class="form-group">
                             <label for="signin-password">Password</label>
-                            <input type="password" id="signin-password" required>
+                            <input type="password" id="signin-password" placeholder="Enter your password" required>
                         </div>
                         <button type="submit" class="modal-button">Sign In</button>
                     </form>
@@ -1363,17 +1494,17 @@ curl -X POST http://localhost:3000/upload-image \
                 `;
             } else if (type === 'signup') {
                 modalContent.innerHTML = `
-                    <h2 class="modal-title">Subscribe</h2>
+                    <h2 class="modal-title">Join Our Community</h2>
                     <form class="modal-form" onsubmit="handleSignup(event)">
                         <div class="form-group">
                             <label for="signup-name">Full Name</label>
-                            <input type="text" id="signup-name" required>
+                            <input type="text" id="signup-name" placeholder="Enter your full name" required>
                         </div>
                         <div class="form-group">
-                            <label for="signup-email">Email</label>
-                            <input type="email" id="signup-email" required>
+                            <label for="signup-email">Email Address</label>
+                            <input type="email" id="signup-email" placeholder="Enter your email" required>
                         </div>
-                        <button type="submit" class="modal-button">Subscribe</button>
+                        <button type="submit" class="modal-button">Subscribe Now</button>
                     </form>
                     <div class="modal-footer">
                         <p>Already have an account? <a href="#" onclick="openCustomModal('signin')">Sign in</a></p>
@@ -1383,6 +1514,12 @@ curl -X POST http://localhost:3000/upload-image \
             
             modal.style.display = 'block';
             document.body.style.overflow = 'hidden';
+            
+            // Focus on first input
+            setTimeout(() => {
+                const firstInput = modalContent.querySelector('input');
+                if (firstInput) firstInput.focus();
+            }, 100);
         }
 
         function closeCustomModal() {
@@ -1396,8 +1533,16 @@ curl -X POST http://localhost:3000/upload-image \
             const email = document.getElementById('signin-email').value;
             const password = document.getElementById('signin-password').value;
             
+            // Show loading state
+            const submitButton = event.target.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            submitButton.textContent = 'Signing In...';
+            submitButton.disabled = true;
+            
             // Simulate signin process - always show success
             setTimeout(() => {
+                showNotification(`Welcome back, ${email}! You've been successfully signed in.`, 'success');
+                
                 const modalContent = document.getElementById('modalContent');
                 modalContent.innerHTML = `
                     <h2 class="modal-title">Welcome Back!</h2>
@@ -1409,7 +1554,7 @@ curl -X POST http://localhost:3000/upload-image \
                         <button class="modal-button" onclick="closeCustomModal()">Continue</button>
                     </div>
                 `;
-            }, 1000);
+            }, 1500);
         }
 
         function handleSignup(event) {
@@ -1417,11 +1562,19 @@ curl -X POST http://localhost:3000/upload-image \
             const name = document.getElementById('signup-name').value;
             const email = document.getElementById('signup-email').value;
             
+            // Show loading state
+            const submitButton = event.target.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            submitButton.textContent = 'Subscribing...';
+            submitButton.disabled = true;
+            
             // Simulate signup process - always show success
             setTimeout(() => {
+                showNotification(`Welcome ${name}! You've been successfully subscribed.`, 'success');
+                
                 const modalContent = document.getElementById('modalContent');
                 modalContent.innerHTML = `
-                    <h2 class="modal-title">Welcome!</h2>
+                    <h2 class="modal-title">Welcome to the Community!</h2>
                     <div class="success-message">
                         <p>Successfully subscribed ${name}!</p>
                         <p>You will receive updates and newsletters at ${email}</p>
@@ -1430,7 +1583,7 @@ curl -X POST http://localhost:3000/upload-image \
                         <button class="modal-button" onclick="closeCustomModal()">Continue</button>
                     </div>
                 `;
-            }, 1000);
+            }, 1500);
         }
 
         // Close modal when clicking outside
