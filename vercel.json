@@ -18,6 +18,10 @@
     {
       "src": "/building-a-lightning-fast-image-resizer-with-motia-and-aws-s3/",
       "dest": "/building-a-lightning-fast-image-resizer-with-motia-and-aws-s3.html"
-    }
+    },
+    {
+        "src": "/author/rohit-ghumare/",
+        "dest": "/author/rohit-ghumare.html"
+      }
   ]
 }
