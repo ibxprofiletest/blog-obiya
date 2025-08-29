@@ -22,6 +22,10 @@
     {
         "src": "/author/rohit-ghumare/",
         "dest": "/author/rohit-ghumare.html"
-      }
+    },
+    {
+        "src": "/content/images/size/w562/format/webp/2025/08/Blog-Thumbanail@4x-2.png",
+        "dest": "/content/images/size/w562/format/webp/2025/08/Blog-Thumbanail@4x-2.png"
+    }
   ]
 }
