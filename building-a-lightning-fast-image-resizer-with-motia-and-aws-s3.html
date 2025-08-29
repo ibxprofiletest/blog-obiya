@@ -399,12 +399,12 @@ npm install -g motia
 
 # Verify installation
 motia --version
-</code></pre><h3 id="create-new-motia-project">Create New Motia Project</h3><p><strong>Initialize the project:</strong></p><pre><code class="language-bash"># Create new Motia project
+</code></pre><h3 id="create-new-motia-project">Create New Obiya Project</h3><p><strong>Initialize the project:</strong></p><pre><code class="language-bash"># Create new Obiya Project
 npx obiya@latest create -n image-processor
 
 # Navigate to project
 cd image-processor
-</code></pre><p>This creates a basic Motia project structure with:</p><ul><li><code>steps/</code>&nbsp;folder for your processing pipeline</li><li><code>shared/</code>&nbsp;folder for utilities and interfaces</li><li><code>package.json</code>&nbsp;with Motia dependencies</li><li>Example configuration files</li></ul><h3 id="environment-configuration">Environment Configuration</h3><p>Create a&nbsp;<code>.env</code>&nbsp;file in your project root:</p><pre><code class="language-bash"># Storage Configuration
+</code></pre><p>This creates a basic Obiya Project structure with:</p><ul><li><code>steps/</code>&nbsp;folder for your processing pipeline</li><li><code>shared/</code>&nbsp;folder for utilities and interfaces</li><li><code>package.json</code>&nbsp;with Motia dependencies</li><li>Example configuration files</li></ul><h3 id="environment-configuration">Environment Configuration</h3><p>Create a&nbsp;<code>.env</code>&nbsp;file in your project root:</p><pre><code class="language-bash"># Storage Configuration
 STORAGE_TYPE=s3
 
 # AWS S3 Configuration  
@@ -415,9 +415,9 @@ AWS_S3_BUCKET_NAME=your-bucket-name
 </code></pre><h3 id="quick-setup-check">Quick Setup Check</h3><p>Run this to verify everything works:</p><pre><code class="language-bash"># Install dependencies
 npm install
 
-# Start Motia development server
+# Start Obiya development server
 npm run dev
-</code></pre><p>If Motia Workbench opens at&nbsp;<code>http://localhost:3000</code>&nbsp;and shows your project, you're ready to build.</p><h2 id="the-first-step-upload-and-storage">The First Step: Upload and Storage</h2><p>When someone sends an image to your processing pipeline, it needs to get validated, stored safely, and trigger the resize operations. That's where the upload handler comes in - the entry point that receives images and starts everything else.</p><h3 id="setting-up-the-image-upload-handler">Setting up the Image Upload Handler</h3><p>First, create the upload step that will receive all image uploads:</p><p><strong>Create&nbsp;<code>steps/upload-image.step.ts</code>:</strong></p><pre><code class="language-tsx">import { ApiRouteConfig, Handlers } from 'obiya'
+</code></pre><p>If Obiya Workbench opens at&nbsp;<code>http://localhost:3000</code>&nbsp;and shows your project, you're ready to build.</p><h2 id="the-first-step-upload-and-storage">The First Step: Upload and Storage</h2><p>When someone sends an image to your processing pipeline, it needs to get validated, stored safely, and trigger the resize operations. That's where the upload handler comes in - the entry point that receives images and starts everything else.</p><h3 id="setting-up-the-image-upload-handler">Setting up the Image Upload Handler</h3><p>First, create the upload step that will receive all image uploads:</p><p><strong>Create&nbsp;<code>steps/upload-image.step.ts</code>:</strong></p><pre><code class="language-tsx">import { ApiRouteConfig, Handlers } from 'obiya'
 import { z } from 'zod'
 import type { ImageMetadata } from '../shared/interfaces'
 import {
@@ -712,7 +712,7 @@ export const config: EventConfig = {
     throw new Error(`Completion tracking failed: ${error.message}`)
   }
 }
-</code></pre><p>The completion tracker only emits the final event when all three resize operations are done. Until then, it just logs what's still pending.</p><h3 id="why-this-architecture-works">Why This Architecture Works</h3><p>This completion tracking approach has several benefits:</p><p><strong>Resilient</strong>: If one resize fails, the others keep working and the tracker knows what's missing</p><p><strong>Scalable</strong>: Adding new resize variants just means updating the tracker to listen for more events</p><p><strong>Observable</strong>: You can see exactly what's happening at each step through the logs</p><p><strong>Flexible</strong>: The final completion event can trigger additional processing like sending notifications or updating databases</p><p>The event-driven design means each piece does one job well. The upload handler doesn't know about resizing. The resizers don't know about completion tracking. The completion tracker doesn't know about image processing. This separation makes the system easy to understand, test, and modify.</p><h2 id="running-the-complete-project">Running the Complete Project</h2><p>Now that you've built all the components, let's see the image processing pipeline in action. This section shows how to start the system and demonstrates real image processing workflows.</p><h3 id="starting-the-system">Starting the System</h3><p>First, start your Motia development server:</p><pre><code class="language-bash">npm run dev
+</code></pre><p>The completion tracker only emits the final event when all three resize operations are done. Until then, it just logs what's still pending.</p><h3 id="why-this-architecture-works">Why This Architecture Works</h3><p>This completion tracking approach has several benefits:</p><p><strong>Resilient</strong>: If one resize fails, the others keep working and the tracker knows what's missing</p><p><strong>Scalable</strong>: Adding new resize variants just means updating the tracker to listen for more events</p><p><strong>Observable</strong>: You can see exactly what's happening at each step through the logs</p><p><strong>Flexible</strong>: The final completion event can trigger additional processing like sending notifications or updating databases</p><p>The event-driven design means each piece does one job well. The upload handler doesn't know about resizing. The resizers don't know about completion tracking. The completion tracker doesn't know about image processing. This separation makes the system easy to understand, test, and modify.</p><h2 id="running-the-complete-project">Running the Complete Project</h2><p>Now that you've built all the components, let's see the image processing pipeline in action. This section shows how to start the system and demonstrates real image processing workflows.</p><h3 id="starting-the-system">Starting the System</h3><p>First, start your Obiya development server:</p><pre><code class="language-bash">npm run dev
 </code></pre><p>The logs show all your steps being created - upload handler, desktop resizer, mobile resizer, compression resizer, and completion tracker. When you see "Server ready and listening on port 3000," your system is running.</p><h3 id="testing-image-upload">Testing Image Upload</h3><p>Upload a test image to see the complete processing flow:</p><pre><code class="language-bash"># First, convert an image to base64
 node scripts/convert-to-base64.js path/to/your/test-image.jpg
 
