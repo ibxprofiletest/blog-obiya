@@ -170,7 +170,8 @@
 
     <meta name="generator" content="Ghost 6.0">
     <link rel="alternate" type="application/rss+xml" title="Motia" href="https://blog-motia.vercel.app/rss/">
-    <script defer src="https://cdn.jsdelivr.net/ghost/portal@~2.52/umd/portal.min.js" data-i18n="true" data-ghost="https://blog-motia.vercel.app/" data-key="60a5c5eb6662c8dc6942620537" data-api="https://motia.ghost.io/ghost/api/content/" data-locale="en" data-members-signin-otc="false" crossorigin="anonymous"></script><style id="gh-members-styles">.gh-post-upgrade-cta-content,
+    <!-- Ghost Portal script disabled - using custom modal instead -->
+    <!-- <script defer src="https://cdn.jsdelivr.net/ghost/portal@~2.52/umd/portal.min.js" data-i18n="true" data-ghost="https://blog-motia.vercel.app/" data-key="60a5c5eb6662c8dc6942620537" data-api="https://motia.ghost.io/ghost/api/content/" data-locale="en" data-members-signin-otc="false" crossorigin="anonymous"></script> --><style id="gh-members-styles">.gh-post-upgrade-cta-content,
 .gh-post-upgrade-cta {
     display: flex;
     flex-direction: column;
@@ -301,8 +302,8 @@
 
 
                     <div class="site-account">
-                                <a class="site-account__link" href="#/portal/signin" data-portal="signin">Sign in</a>
-                                <a class="site-account__button button" data-btn-size="small" href="#/portal/signup" data-portal="signup">Subscribe</a>
+                                <a class="site-account__link" href="#" onclick="openCustomModal('signin')">Sign in</a>
+                                <a class="site-account__button button" data-btn-size="small" href="#" onclick="openCustomModal('signup')">Subscribe</a>
                     </div>
 
                     <div class="site-color-scheme">
@@ -1150,7 +1151,7 @@ curl -X POST http://localhost:3000/upload-image \
                 <nav class="nav-secondary">
         <ul class="nav-secondary__menu">
             <li class="nav-secondary__menu-item">
-                <a class="nav-secondary__menu-link" href="#/portal/">
+                <a class="nav-secondary__menu-link" href="#" onclick="openCustomModal('signup')">
                     <span class="nav-secondary__menu-title">Sign up</span>
                 </a>
             </li>
@@ -1180,7 +1181,273 @@ curl -X POST http://localhost:3000/upload-image \
 
     <script defer src="https://blog-motia.vercel.app/assets/dist/main.js?v=d1750ad2dd"></script>
 
-    
+    <!-- Custom Modal HTML -->
+    <div id="customModal" class="custom-modal" style="display: none;">
+        <div class="custom-modal-content">
+            <span class="custom-modal-close" onclick="closeCustomModal()">&times;</span>
+            <div id="modalContent">
+                <!-- Modal content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Modal CSS -->
+    <style>
+        .custom-modal {
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .custom-modal-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .custom-modal-close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.2s;
+        }
+
+        .custom-modal-close:hover {
+            color: #000;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #333;
+        }
+
+        .modal-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #2f7eff;
+        }
+
+        .modal-button {
+            background: linear-gradient(135deg, #2f7eff, #1e40af);
+            color: white;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        .modal-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(47, 126, 255, 0.3);
+        }
+
+        .modal-footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e1e5e9;
+        }
+
+        .modal-footer a {
+            color: #2f7eff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .modal-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .success-message {
+            background-color: #d1fae5;
+            color: #065f46;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 15px;
+            border: 1px solid #10b981;
+        }
+
+        .error-message {
+            background-color: #fee2e2;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 15px;
+            border: 1px solid #dc2626;
+        }
+    </style>
+
+    <!-- Custom Modal JavaScript -->
+    <script>
+        function openCustomModal(type) {
+            const modal = document.getElementById('customModal');
+            const modalContent = document.getElementById('modalContent');
+            
+            if (type === 'signin') {
+                modalContent.innerHTML = `
+                    <h2 class="modal-title">Sign In</h2>
+                    <form class="modal-form" onsubmit="handleSignin(event)">
+                        <div class="form-group">
+                            <label for="signin-email">Email</label>
+                            <input type="email" id="signin-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="signin-password">Password</label>
+                            <input type="password" id="signin-password" required>
+                        </div>
+                        <button type="submit" class="modal-button">Sign In</button>
+                    </form>
+                    <div class="modal-footer">
+                        <p>Don't have an account? <a href="#" onclick="openCustomModal('signup')">Sign up</a></p>
+                    </div>
+                `;
+            } else if (type === 'signup') {
+                modalContent.innerHTML = `
+                    <h2 class="modal-title">Subscribe</h2>
+                    <form class="modal-form" onsubmit="handleSignup(event)">
+                        <div class="form-group">
+                            <label for="signup-name">Full Name</label>
+                            <input type="text" id="signup-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-email">Email</label>
+                            <input type="email" id="signup-email" required>
+                        </div>
+                        <button type="submit" class="modal-button">Subscribe</button>
+                    </form>
+                    <div class="modal-footer">
+                        <p>Already have an account? <a href="#" onclick="openCustomModal('signin')">Sign in</a></p>
+                    </div>
+                `;
+            }
+            
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeCustomModal() {
+            const modal = document.getElementById('customModal');
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function handleSignin(event) {
+            event.preventDefault();
+            const email = document.getElementById('signin-email').value;
+            const password = document.getElementById('signin-password').value;
+            
+            // Simulate signin process - always show success
+            setTimeout(() => {
+                const modalContent = document.getElementById('modalContent');
+                modalContent.innerHTML = `
+                    <h2 class="modal-title">Welcome Back!</h2>
+                    <div class="success-message">
+                        <p>Successfully signed in as ${email}</p>
+                        <p>You are now logged in to your account.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="modal-button" onclick="closeCustomModal()">Continue</button>
+                    </div>
+                `;
+            }, 1000);
+        }
+
+        function handleSignup(event) {
+            event.preventDefault();
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            
+            // Simulate signup process - always show success
+            setTimeout(() => {
+                const modalContent = document.getElementById('modalContent');
+                modalContent.innerHTML = `
+                    <h2 class="modal-title">Welcome!</h2>
+                    <div class="success-message">
+                        <p>Successfully subscribed ${name}!</p>
+                        <p>You will receive updates and newsletters at ${email}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="modal-button" onclick="closeCustomModal()">Continue</button>
+                    </div>
+                `;
+            }, 1000);
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('customModal');
+            if (event.target === modal) {
+                closeCustomModal();
+            }
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeCustomModal();
+            }
+        });
+    </script>
 
 </body>
 
