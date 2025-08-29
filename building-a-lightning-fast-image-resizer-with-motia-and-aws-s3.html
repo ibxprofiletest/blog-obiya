@@ -1,0 +1,1187 @@
+<!doctype html>
+<html lang="en" class="no-js" data-has-dark-mode-support>
+
+<head>
+    <title>Building a Lightning-Fast Image Resizer with Motia and AWS S3</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>document.documentElement.classList.replace('no-js','js');</script>
+    <script>
+        if (window.localStorage.getItem('asona-prefers-color-scheme') && !document.documentElement.hasAttribute('data-prefers-color-scheme')) {
+            document.documentElement.setAttribute('data-prefers-color-scheme', window.localStorage.getItem('asona-prefers-color-scheme'));
+        }
+    </script>
+
+    <link rel="preload" as="font" type="font/woff2" href="https://blog.motia.dev/assets/fonts/jost-v14-latin_latin-ext-regular.woff2?v=d1750ad2dd" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="https://blog.motia.dev/assets/fonts/jost-v14-latin_latin-ext-500.woff2?v=d1750ad2dd" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="https://blog.motia.dev/assets/fonts/encode-sans-semi-condensed-v10-latin_latin-ext-600.woff2?v=d1750ad2dd" crossorigin>
+
+<style>
+    @font-face {
+        font-family: 'Jost';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: url('https://blog.motia.dev/assets/fonts/jost-v14-latin_latin-ext-regular.woff2?v=d1750ad2dd') format('woff2');
+    }
+
+    @font-face {
+        font-family: 'Jost';
+        font-style: italic;
+        font-weight: 400;
+        font-display: swap;
+        src: url('https://blog.motia.dev/assets/fonts/jost-v14-latin_latin-ext-italic.woff2?v=d1750ad2dd') format('woff2');
+    }
+
+    @font-face {
+        font-family: 'Jost';
+        font-style: normal;
+        font-weight: 500;
+        font-display: swap;
+        src: url('https://blog.motia.dev/assets/fonts/jost-v14-latin_latin-ext-500.woff2?v=d1750ad2dd') format('woff2');
+    }
+
+    @font-face {
+        font-family: 'Jost';
+        font-style: normal;
+        font-weight: 600;
+        font-display: swap;
+        src: url('https://blog.motia.dev/assets/fonts/jost-v14-latin_latin-ext-600.woff2?v=d1750ad2dd') format('woff2');
+    }
+
+    @font-face {
+        font-family: 'Jost';
+        font-style: italic;
+        font-weight: 600;
+        font-display: swap;
+        src: url('https://blog.motia.dev/assets/fonts/jost-v14-latin_latin-ext-600italic.woff2?v=d1750ad2dd') format('woff2');
+    }
+
+    @font-face {
+        font-family: 'Encode Sans Semi Condensed';
+        font-style: normal;
+        font-weight: 600;
+        font-display: swap;
+        src: url('https://blog.motia.dev/assets/fonts/encode-sans-semi-condensed-v10-latin_latin-ext-600.woff2?v=d1750ad2dd') format('woff2');
+    }
+
+    @font-face {
+        font-family: 'Encode Sans Semi Condensed';
+        font-style: normal;
+        font-weight: 700;
+        font-display: swap;
+        src: url('https://blog.motia.dev/assets/fonts/encode-sans-semi-condensed-v10-latin-700.woff2?v=d1750ad2dd') format('woff2');
+    }
+
+    :root {
+        --asona--font-family--base: 'Jost', Helvetica, sans-serif;
+        --asona--font-family--headings: 'Encode Sans Semi Condensed', Helvetica, sans-serif;
+        --asona--font-family--elements: 'Jost', Helvetica, sans-serif;
+        --asona--font-weight--base: 400;
+        --asona--font-weight--base-bold: 600;
+        --asona--font-weight--headings: 600;
+        --asona--font-weight--headings-small: 700;
+        --asona--font-weight--elements: 500;
+    }
+</style>
+
+    <link rel="stylesheet" href="https://blog.motia.dev/assets/dist/style.css?v=d1750ad2dd">
+
+            <link rel="preload" as="image"
+            imagesrcset="/content/images/size/w364/format/webp/2025/08/Blog-Thumbanail@4x-2.png 364w,/content/images/size/w562/format/webp/2025/08/Blog-Thumbanail@4x-2.png 562w,/content/images/size/w760/format/webp/2025/08/Blog-Thumbanail@4x-2.png 760w,/content/images/size/w958/format/webp/2025/08/Blog-Thumbanail@4x-2.png 958w,/content/images/size/w1160/format/webp/2025/08/Blog-Thumbanail@4x-2.png 1160w,/content/images/size/w1520/format/webp/2025/08/Blog-Thumbanail@4x-2.png 1520w,/content/images/size/w1916/format/webp/2025/08/Blog-Thumbanail@4x-2.png 1916w"
+            imagesizes="(min-width: 1050px) 958px, (min-width: 820px) calc(100vw - 70px), 100vw"
+>
+
+
+    <meta name="description" content="Learn to build a production-ready image resizer using Motia&#x27;s event-driven framework, AWS S3, and Sharp. Upload one image and automatically generate three optimized versions (desktop, mobile, compressed) in parallel.">
+    <link rel="icon" href="https://blog.motia.dev/content/images/size/w256h256/2025/07/AVATAR_0002_1.png" type="image/png">
+    <link rel="canonical" href="https://blog.motia.dev/building-a-lightning-fast-image-resizer-with-motia-and-aws-s3/">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    
+    <meta property="og:site_name" content="Motia">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Building a Lightning-Fast Image Resizer with Motia and AWS S3">
+    <meta property="og:description" content="Learn to build a production-ready image resizer using Motia&#x27;s event-driven framework, AWS S3, and Sharp. Upload one image and automatically generate three optimized versions (desktop, mobile, compressed) in parallel.">
+    <meta property="og:url" content="https://blog.motia.dev/building-a-lightning-fast-image-resizer-with-motia-and-aws-s3/">
+    <meta property="og:image" content="https://blog.motia.dev/content/images/size/w1200/2025/08/Blog-Thumbanail@4x-2.png">
+    <meta property="article:published_time" content="2025-08-18T18:05:11.000Z">
+    <meta property="article:modified_time" content="2025-08-18T18:09:18.000Z">
+    <meta property="article:tag" content="backend">
+    <meta property="article:tag" content="motia">
+    <meta property="article:tag" content="aws">
+    <meta property="article:tag" content="s3">
+    <meta property="article:tag" content="developer">
+    <meta property="article:tag" content="typescript">
+    <meta property="article:tag" content="nodejs">
+    <meta property="article:tag" content="workflow">
+    
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Building a Lightning-Fast Image Resizer with Motia and AWS S3">
+    <meta name="twitter:description" content="Learn to build a production-ready image resizer using Motia&#x27;s event-driven framework, AWS S3, and Sharp. Upload one image and automatically generate three optimized versions (desktop, mobile, compressed) in parallel.">
+    <meta name="twitter:url" content="https://blog.motia.dev/building-a-lightning-fast-image-resizer-with-motia-and-aws-s3/">
+    <meta name="twitter:image" content="https://blog.motia.dev/content/images/size/w1200/2025/08/Blog-Thumbanail@4x-2.png">
+    <meta name="twitter:label1" content="Written by">
+    <meta name="twitter:data1" content="Motia Team">
+    <meta name="twitter:label2" content="Filed under">
+    <meta name="twitter:data2" content="backend, motia, aws, s3, developer, typescript, nodejs, workflow">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="720">
+    
+    <script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "publisher": {
+        "@type": "Organization",
+        "name": "Motia",
+        "url": "https://blog.motia.dev/",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://blog.motia.dev/content/images/2025/07/FLAT-BLUE-LOGO_MOTIA-1.png"
+        }
+    },
+    "author": {
+        "@type": "Person",
+        "name": "Motia Team",
+        "image": {
+            "@type": "ImageObject",
+            "url": "https://blog.motia.dev/content/images/2025/07/AVATAR_0001_2.png",
+            "width": 1080,
+            "height": 1080
+        },
+        "url": "https://blog.motia.dev/author/rohit-ghumare/",
+        "sameAs": []
+    },
+    "headline": "Building a Lightning-Fast Image Resizer with Motia and AWS S3",
+    "url": "https://blog.motia.dev/building-a-lightning-fast-image-resizer-with-motia-and-aws-s3/",
+    "datePublished": "2025-08-18T18:05:11.000Z",
+    "dateModified": "2025-08-18T18:09:18.000Z",
+    "image": {
+        "@type": "ImageObject",
+        "url": "https://blog.motia.dev/content/images/size/w1200/2025/08/Blog-Thumbanail@4x-2.png",
+        "width": 1200,
+        "height": 720
+    },
+    "keywords": "backend, motia, aws, s3, developer, typescript, nodejs, workflow",
+    "description": "Learn to build a production-ready image resizer using Motia&#x27;s event-driven framework, AWS S3, and Sharp. Upload one image and automatically generate three optimized versions (desktop, mobile, compressed) in parallel.",
+    "mainEntityOfPage": "https://blog.motia.dev/building-a-lightning-fast-image-resizer-with-motia-and-aws-s3/"
+}
+    </script>
+
+    <meta name="generator" content="Ghost 6.0">
+    <link rel="alternate" type="application/rss+xml" title="Motia" href="https://blog.motia.dev/rss/">
+    <script defer src="https://cdn.jsdelivr.net/ghost/portal@~2.52/umd/portal.min.js" data-i18n="true" data-ghost="https://blog.motia.dev/" data-key="60a5c5eb6662c8dc6942620537" data-api="https://motia.ghost.io/ghost/api/content/" data-locale="en" data-members-signin-otc="false" crossorigin="anonymous"></script><style id="gh-members-styles">.gh-post-upgrade-cta-content,
+.gh-post-upgrade-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    text-align: center;
+    width: 100%;
+    color: #ffffff;
+    font-size: 16px;
+}
+
+.gh-post-upgrade-cta-content {
+    border-radius: 8px;
+    padding: 40px 4vw;
+}
+
+.gh-post-upgrade-cta h2 {
+    color: #ffffff;
+    font-size: 28px;
+    letter-spacing: -0.2px;
+    margin: 0;
+    padding: 0;
+}
+
+.gh-post-upgrade-cta p {
+    margin: 20px 0 0;
+    padding: 0;
+}
+
+.gh-post-upgrade-cta small {
+    font-size: 16px;
+    letter-spacing: -0.2px;
+}
+
+.gh-post-upgrade-cta a {
+    color: #ffffff;
+    cursor: pointer;
+    font-weight: 500;
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+.gh-post-upgrade-cta a:hover {
+    color: #ffffff;
+    opacity: 0.8;
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+.gh-post-upgrade-cta a.gh-btn {
+    display: block;
+    background: #ffffff;
+    text-decoration: none;
+    margin: 28px 0 0;
+    padding: 8px 18px;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.gh-post-upgrade-cta a.gh-btn:hover {
+    opacity: 0.92;
+}</style>
+    <script defer src="https://cdn.jsdelivr.net/ghost/sodo-search@~1.8/umd/sodo-search.min.js" data-key="60a5c5eb6662c8dc6942620537" data-styles="https://cdn.jsdelivr.net/ghost/sodo-search@~1.8/umd/main.css" data-sodo-search="https://motia.ghost.io/" data-locale="en" crossorigin="anonymous"></script>
+    
+    <link href="https://blog.motia.dev/webmentions/receive/" rel="webmention">
+    <script defer src="/public/cards.min.js?v=d1750ad2dd"></script>
+    <link rel="stylesheet" type="text/css" href="/public/cards.min.css?v=d1750ad2dd">
+    <script defer src="/public/comment-counts.min.js?v=d1750ad2dd" data-ghost-comments-counts-api="https://blog.motia.dev/members/api/comments/counts/"></script>
+    <script defer src="/public/member-attribution.min.js?v=d1750ad2dd"></script><style>:root {--ghost-accent-color: #2f7eff;}</style>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs/prism.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/autoloader/prism-autoloader.min.js" defer></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs/themes/prism-tomorrow.min.css">
+
+    <script defer src="/public/ghost-stats.min.js?v=d1750ad2dd" data-stringify-payload="false" data-datasource="analytics_events" data-storage="localStorage" data-host="https://blog.motia.dev/.ghost/analytics/api/v1/page_hit"  tb_site_uuid="20963f3a-c117-4cee-853d-d4e582ecb52b" tb_post_uuid="623f6bf2-cc0c-40bb-b380-2972fd3077c6" tb_post_type="post" tb_member_uuid="undefined" tb_member_status="undefined"></script>
+    <link rel="preconnect" href="https://fonts.bunny.net"><link rel="stylesheet" href="https://fonts.bunny.net/css?family=fira-sans:400,500,600"><style>:root {--gh-font-heading: Fira Sans;}</style>
+</head>
+
+<body class="post-template tag-backend tag-motia tag-aws tag-s3 tag-developer tag-typescript tag-nodejs tag-workflow gh-font-heading-fira-sans">
+
+    <a class="skip-link visually-hidden-focusable" href="#main">Skip to content</a>
+
+    <div class="site">
+
+        <header id="site-header" class="site-header">
+    <div class="site-header__container">
+        <button
+            class="site-header__hamburger"
+            data-site-action-trigger="navigation"
+            aria-label="Open Menu"
+            aria-expanded="false"
+            aria-controls="site-navigation">
+            <span></span>
+        </button>
+
+        <a href="https://blog.motia.dev" rel="home" class="site-header__logo" data-has-dark-mode-logo>
+                <img class="site-header__logo-image" data-logo-color-scheme="default" src="https://blog.motia.dev/content/images/2025/07/FLAT-BLUE-LOGO_MOTIA-1.png" alt="Motia">
+                    <img class="site-header__logo-image" data-logo-color-scheme="dark" src="https://blog.motia.dev/content/images/2025/07/BLUE-GRADIENT-LOGO_MOTIA.png" alt="Motia">
+        </a>
+
+        <div id="site-navigation" class="site-navigation">
+            <div class="site-navigation__inner">
+                    <nav class="nav-primary">
+        <ul class="nav-primary__menu">
+             
+                <li class="nav-primary__menu-item">
+                    <a class="nav-primary__menu-link" href="https://motia.dev">
+                        <span class="nav-primary__menu-title">Home</span>
+                    </a>
+                </li>
+             
+             
+                <li class="nav-primary__menu-item">
+                    <a class="nav-primary__menu-link" href="https://motia.dev/manifesto/">
+                        <span class="nav-primary__menu-title">Manifesto</span>
+                    </a>
+                </li>
+             
+             
+                <li class="nav-primary__menu-item">
+                    <a class="nav-primary__menu-link" href="https://github.com/motiadev/motia">
+                        <span class="nav-primary__menu-title">Star our Repo</span>
+                    </a>
+                </li>
+             
+        </ul>
+    </nav>
+
+
+                    <div class="site-account">
+                                <a class="site-account__link" href="#/portal/signin" data-portal="signin">Sign in</a>
+                                <a class="site-account__button button" data-btn-size="small" href="#/portal/signup" data-portal="signup">Subscribe</a>
+                    </div>
+
+                    <div class="site-color-scheme">
+                        <div class="site-color-scheme__current">
+                            <span class="site-color-scheme__icon" data-show-color-scheme="light">
+<svg version="1.1" aria-hidden="true" focusable="false" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+  <path d="M12 8a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+</svg>
+</span>
+                            <span class="site-color-scheme__icon" data-show-color-scheme="dark"><svg version="1.1" aria-hidden="true" focusable="false" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" fill="currentColor"><path d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"/></svg>
+</span>
+                            <span class="site-color-scheme__icon" data-show-color-scheme="system"><svg version="1.1" aria-hidden="true" focusable="false" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor"><path d="M448 256c0-106-86-192-192-192V448c106 0 192-86 192-192zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256z"/></svg>
+</span>
+                        </div>
+                        <div class="site-color-scheme__options">
+                            <button class="site-color-scheme__item" data-toggle-color-scheme="light">
+                                <span class="site-color-scheme__icon">
+<svg version="1.1" aria-hidden="true" focusable="false" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+  <path d="M12 8a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+</svg>
+</span>
+                                <span class="site-color-scheme__label">Light</span>
+                            </button>
+                            <button class="site-color-scheme__item" data-toggle-color-scheme="dark">
+                                <span class="site-color-scheme__icon"><svg version="1.1" aria-hidden="true" focusable="false" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" fill="currentColor"><path d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"/></svg>
+</span>
+                                <span class="site-color-scheme__label">Dark</span>
+                            </button>
+                            <button class="site-color-scheme__item" data-toggle-color-scheme="system">
+                                <span class="site-color-scheme__icon"><svg version="1.1" aria-hidden="true" focusable="false" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor"><path d="M448 256c0-106-86-192-192-192V448c106 0 192-86 192-192zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256z"/></svg>
+</span>
+                                <span class="site-color-scheme__label">System</span>
+                            </button>
+                        </div>
+                    </div>
+            </div>
+        </div>
+
+        <button
+            class="site-header__search-trigger"
+            aria-label="Open Search"
+            data-ghost-search>
+            <span></span>
+        </button>
+    </div>
+
+    <div class="site-actions">
+        <span class="site-actions__backdrop" data-close-site-actions></span>
+        <span class="site-actions__bg"></span>
+    </div>
+
+</header>
+
+        <main id="main" class="site-main">
+            
+
+<article class="article post tag-backend tag-motia tag-aws tag-s3 tag-developer tag-typescript tag-nodejs tag-workflow">
+
+    <header class="article-header section" data-canvas-grid="content" data-post-type="post" data-section="first" data-style="classic" data-has-featured-image="true">
+    <div class="article-header__content">
+            <a href="/tag/backend/" class="article-header__primary-tag" rel="tag">backend</a>
+        <h1 class="article-header__title">
+            <span class="article-header__title-inner">Building a Lightning-Fast Image Resizer with Motia and AWS S3</span>
+        </h1>
+            <p class="article-header__excerpt">Learn to build a production-ready image resizer using Motia&#x27;s event-driven framework, AWS S3, and Sharp. Upload one image and automatically generate three optimized versions (desktop, mobile, compressed) in parallel.</p>
+        <div class="article-header__footer">
+            <span class="article-header__meta article-header__meta--author">
+                <span class="article-header__meta-info">By</span>
+                <a href="https://blog.motia.dev/author/rohit-ghumare/" class="article-header__meta-link">Motia Team</a>
+            </span>
+            <time class="article-header__meta article-header__meta--date" datetime="2025-08-18">Aug 18, 2025</time>
+            <span class="article-header__meta article-header__meta--read-time">19 min read</span>
+        </div>
+    </div>
+    <figure class="article-header__figure">
+        <img class="article-header__image"
+            width="5" height="3"
+            src="/content/images/size/w760/format/webp/2025/08/Blog-Thumbanail@4x-2.png"
+            srcset="/content/images/size/w364/format/webp/2025/08/Blog-Thumbanail@4x-2.png 364w,/content/images/size/w562/format/webp/2025/08/Blog-Thumbanail@4x-2.png 562w,/content/images/size/w760/format/webp/2025/08/Blog-Thumbanail@4x-2.png 760w,/content/images/size/w958/format/webp/2025/08/Blog-Thumbanail@4x-2.png 958w,/content/images/size/w1160/format/webp/2025/08/Blog-Thumbanail@4x-2.png 1160w,/content/images/size/w1520/format/webp/2025/08/Blog-Thumbanail@4x-2.png 1520w,/content/images/size/w1916/format/webp/2025/08/Blog-Thumbanail@4x-2.png 1916w"
+            sizes="(min-width: 1050px) 958px, (min-width: 820px) calc(100vw - 70px), 100vw"
+            loading="eager"
+            alt="Building a Lightning-Fast Image Resizer with Motia and AWS S3"
+            onload="this.setAttribute('data-loaded', true)">
+    </figure>
+</header>
+
+    <div class="article-main section" data-canvas-grid="content">
+        <div class="article-content" data-canvas-grid="content" data-canvas-grid-self="full">
+            <h2 id="introduction">Introduction</h2><p>Your users upload a 5MB photo, and your site crashes. Sound familiar? Or maybe your mobile users are stuck waiting 30 seconds for a massive desktop image to load. We've all been there.</p><p>Most image processing solutions are either too complex (hello, microservices nightmare) or too slow (sequential processing that makes users wait). But what if you could upload one image and instantly get three perfectly optimized versions - desktop, mobile, and compressed - all processed at the same time?</p><p>This image processing pipeline runs entirely on Motia's event-driven framework. Upload one image, and the system automatically creates three versions in parallel: a <strong>crisp desktop version (1920px), a mobile-optimized version (720px), and a compressed low-quality version (480px)</strong> for fast loading.</p><p>Here's what happens when you upload an image: the system validates the file, saves it to AWS S3, and then triggers three separate resize operations that all run at the same time. While one process creates the desktop version, another handles mobile, and a third creates the compressed version. All of this happens in parallel, so your users get their processed images in seconds, not minutes.</p><p>The core technologies we used are&nbsp;<a href="https://motia.dev/?ref=blog.motia.dev" rel="noreferrer"><code>Motia</code></a>&nbsp;for orchestrating the entire pipeline,&nbsp;<a href="https://github.com/lovell/sharp?ref=blog.motia.dev" rel="noreferrer"><code>Sharp</code></a>&nbsp;for lightning-fast image processing,&nbsp;<code>AWS S3</code>&nbsp;for cloud storage, and&nbsp;<code>TypeScript</code>&nbsp;for type safety and reliability.</p><figure class="kg-card kg-embed-card"><iframe width="200" height="113" src="https://www.youtube.com/embed/i5Vb7n5Qg6E?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen="" title="Lightning-Fast Image Resizer in 3 formats in one-click with Motia Parallel Processing, AWS S3, Sharp"></iframe></figure><p>In this tutorial, you'll learn how to build production-ready image processing systems that handle multiple formats simultaneously. You'll see how event-driven architecture makes it easy to add new image sizes without breaking existing functionality, how to handle file uploads and cloud storage efficiently, and how to create systems that scale automatically as your traffic grows.</p><figure class="kg-card kg-image-card"><img src="https://blog.motia.dev/content/images/2025/08/Rohit-Ghumare-s-Video---Aug-15--2025-VEED.gif" class="kg-image" alt="" loading="lazy" width="1655" height="540" srcset="https://blog.motia.dev/content/images/size/w600/2025/08/Rohit-Ghumare-s-Video---Aug-15--2025-VEED.gif 600w, https://blog.motia.dev/content/images/size/w1000/2025/08/Rohit-Ghumare-s-Video---Aug-15--2025-VEED.gif 1000w, https://blog.motia.dev/content/images/size/w1600/2025/08/Rohit-Ghumare-s-Video---Aug-15--2025-VEED.gif 1600w, https://blog.motia.dev/content/images/2025/08/Rohit-Ghumare-s-Video---Aug-15--2025-VEED.gif 1655w" sizes="(min-width: 720px) 720px"></figure><h2 id="why-this-architecture">Why this Architecture</h2><p>Traditional image processing is painfully slow because everything happens one after another. Upload an image, wait for it to save, then wait for desktop resize, then wait for mobile resize, then wait for compression. By the time it's done, your users have given up.</p><p>Motia's event-driven approach changes everything. One upload triggers three simultaneous processes. Think of it like a restaurant kitchen - instead of one chef making your entire meal step by step, you have three chefs working on different parts at the same time. Your meal (processed images) arrives much faster.</p><p>The upload step only handles validation and storage. It doesn't know anything about resizing - that's not its job. Once the image is safely stored, it emits an event that wakes up three specialized workers: desktop resizer, mobile resizer, and compression specialist. Each worker focuses on one task and does it really well.</p><p>When each worker finishes, they report back to a completion tracker. <strong><em>The tracker keeps score - "desktop done, mobile done, still waiting on compression." Once all three are complete, it emits a final "all done" event.</em></strong> This means you can easily add new formats <strong>(like tablet or thumbnail) </strong>without changing any existing code.</p><h2 id="project-overview">Project Overview</h2><p>Here's how the system works when someone uploads an image:</p><p><strong>1. Upload and validate</strong>&nbsp;→ Image arrives via API, gets checked for format and size</p><p><strong>2. Save to cloud storage</strong>&nbsp;→ Original image stored in AWS S3 with unique filename</p><p><strong>3. Trigger parallel processing</strong>&nbsp;→ Single event wakes up three resize workers</p><p><strong>4. Simultaneous resizing</strong>&nbsp;→ Three processes run at the same time:</p><ul><li>Desktop resizer creates 1920px version (90% quality)</li><li>Mobile resizer creates 720px version (85% quality)</li><li>Compression resizer creates 480px version (60% quality)</li></ul><p><strong>5. Track completion</strong>&nbsp;→ Completion tracker monitors all three processes</p><p><strong>6. Final confirmation</strong>&nbsp;→ System confirms when all processing is complete</p><p>The five main processing steps are:</p><ul><li><strong>Upload handler</strong>: Validates files and saves originals to S3</li><li><strong>Desktop resizer</strong>: Creates high-quality desktop versions</li><li><strong>Mobile resizer</strong>: Optimizes images for mobile devices</li><li><strong>Compression resizer</strong>: Creates fast-loading low-quality versions</li><li><strong>Completion tracker</strong>: Monitors and confirms when all processing is done</li></ul><p>Each step only runs when needed. If you add a new image size later, the existing steps don't change. If one resize fails, the others keep working. This keeps the system reliable and easy to maintain.</p><p>The upload → validate → store → parallel resize → track completion flow means adding new features is just a matter of creating new resize workers that listen for the same event.</p><h2 id="prerequisites">Prerequisites</h2><p>Before building this image processing pipeline, you need these accounts and tools set up:</p><h3 id="required-services-and-accounts"><strong>Required Services and Accounts</strong></h3><p><strong>AWS Account</strong></p><ul><li>Sign up at&nbsp;<a href="https://aws.amazon.com/?ref=blog.motia.dev">https://aws.amazon.com/</a></li><li>Create an S3 bucket for image storage</li><li>Generate access keys from IAM console</li><li>You'll need this for storing original and processed images</li></ul><p><strong>Development Tools</strong></p><p><strong>Node.js (v18+)</strong></p><pre><code class="language-bash"># Check if installed
+node --version
+npm --version
+</code></pre><p><strong>Motia CLI</strong></p><pre><code class="language-bash"># Install Motia globally
+npm install -g motia
+
+# Verify installation
+motia --version
+</code></pre><h3 id="create-new-motia-project">Create New Motia Project</h3><p><strong>Initialize the project:</strong></p><pre><code class="language-bash"># Create new Motia project
+npx motia@latest create -n image-processor
+
+# Navigate to project
+cd image-processor
+</code></pre><p>This creates a basic Motia project structure with:</p><ul><li><code>steps/</code>&nbsp;folder for your processing pipeline</li><li><code>shared/</code>&nbsp;folder for utilities and interfaces</li><li><code>package.json</code>&nbsp;with Motia dependencies</li><li>Example configuration files</li></ul><h3 id="environment-configuration">Environment Configuration</h3><p>Create a&nbsp;<code>.env</code>&nbsp;file in your project root:</p><pre><code class="language-bash"># Storage Configuration
+STORAGE_TYPE=s3
+
+# AWS S3 Configuration  
+AWS_ACCESS_KEY_ID=your_access_key_here
+AWS_SECRET_ACCESS_KEY=your_secret_key_here
+AWS_REGION=us-east-1
+AWS_S3_BUCKET_NAME=your-bucket-name
+</code></pre><h3 id="quick-setup-check">Quick Setup Check</h3><p>Run this to verify everything works:</p><pre><code class="language-bash"># Install dependencies
+npm install
+
+# Start Motia development server
+npm run dev
+</code></pre><p>If Motia Workbench opens at&nbsp;<code>http://localhost:3000</code>&nbsp;and shows your project, you're ready to build.</p><h2 id="the-first-step-upload-and-storage">The First Step: Upload and Storage</h2><p>When someone sends an image to your processing pipeline, it needs to get validated, stored safely, and trigger the resize operations. That's where the upload handler comes in - the entry point that receives images and starts everything else.</p><h3 id="setting-up-the-image-upload-handler">Setting up the Image Upload Handler</h3><p>First, create the upload step that will receive all image uploads:</p><p><strong>Create&nbsp;<code>steps/upload-image.step.ts</code>:</strong></p><pre><code class="language-tsx">import { ApiRouteConfig, Handlers } from 'motia'
+import { z } from 'zod'
+import type { ImageMetadata } from '../shared/interfaces'
+import {
+  generateUniqueFilename,
+  isValidImageFormat,
+  getImageFormat,
+  generateStorageKeys,
+  saveImageBuffer,
+  getImageUrl,
+  validateBase64ImageData
+} from '../shared/storage-utils'
+
+export const config: ApiRouteConfig = {
+  type: 'api',
+  name: 'UploadImage',
+  description: 'Upload and save image, then trigger parallel resize operations',
+  method: 'POST',
+  path: '/upload-image',
+  emits: ['image-saved'],
+  flows: ['image-processing']
+}
+</code></pre><p>This creates a POST endpoint at&nbsp;<code>/upload-image</code>&nbsp;that accepts image uploads. The&nbsp;<code>emits: ['image-saved']</code>&nbsp;tells Motia that this step will trigger other parts of the system when it's done.</p><h3 id="handling-file-uploads-and-validation">Handling File Uploads and Validation</h3><p>The upload handler needs to accept both file uploads and base64 JSON data:</p><pre><code class="language-tsx">export const handler: Handlers['UploadImage'] = async (req, { logger, emit, traceId }) =&gt; {
+  try {
+    // Handle both file uploads and base64 JSON
+    let filename: string
+    let imageBuffer: Buffer
+    
+    if (req.body &amp;&amp; req.body.filename &amp;&amp; req.body.data) {
+      // Handle JSON base64 upload
+      filename = req.body.filename
+      const base64Data = req.body.data.replace(/^data:image\/[a-z]+;base64,/, '')
+      imageBuffer = Buffer.from(base64Data, 'base64')
+    } else {
+      return {
+        status: 400,
+        body: {
+          error: 'Invalid request',
+          details: 'Please provide JSON with filename and base64 data'
+        }
+      }
+    }
+
+    logger.info('Starting image upload process', { filename, fileSize: imageBuffer.length })
+</code></pre><p>This handles the most common upload format - JSON with base64 encoded image data. The system strips out any data URL prefixes and converts the base64 string into a proper Buffer for processing.</p><h3 id="image-format-and-size-validation">Image Format and Size Validation</h3><p>Before processing, we need to make sure the image is valid:</p><pre><code class="language-tsx">    // Validate image format
+    if (!isValidImageFormat(filename)) {
+      logger.warn('Invalid image format', { filename })
+      return {
+        status: 400,
+        body: {
+          error: 'Invalid image format',
+          details: 'Only JPEG, PNG, and WebP formats are supported'
+        }
+      }
+    }
+
+    // Validate file size (50MB limit)
+    if (imageBuffer.length &gt; 50 * 1024 * 1024) {
+      logger.warn('File too large', { fileSize: imageBuffer.length })
+      return {
+        status: 400,
+        body: {
+          error: 'File too large', 
+          details: 'Maximum file size is 50MB'
+        }
+      }
+    }
+
+    // Validate base64 data integrity
+    validateBase64ImageData(req.body.data)
+</code></pre><p>The validation checks three things: file format (JPEG, PNG, WebP only), file size (50MB max), and data integrity (making sure the base64 decodes to a valid image).</p><h3 id="generating-unique-filenames-and-storage-keys">Generating Unique Filenames and Storage Keys</h3><p>To avoid conflicts and organize files properly, we generate unique filenames and storage paths:</p><pre><code class="language-tsx">    // Generate unique filename and storage keys
+    const uniqueFilename = generateUniqueFilename(filename)
+    const storageKeys = generateStorageKeys(uniqueFilename)
+    const format = getImageFormat(filename)
+
+    logger.info('Generated storage keys', {
+      uniqueFilename,
+      originalKey: storageKeys.original,
+      format
+    })
+</code></pre><p>The&nbsp;<code>generateUniqueFilename()</code>&nbsp;function adds a UUID to prevent filename collisions. The&nbsp;<code>generateStorageKeys()</code>&nbsp;function creates organized paths like:</p><ul><li><code>originals/image_uuid.jpg</code>&nbsp;- Original uploaded image</li><li><code>desktop/image_uuid-desktop.jpg</code>&nbsp;- Desktop version</li><li><code>mobile/image_uuid-mobile.jpg</code>&nbsp;- Mobile version</li><li><code>lowquality/image_uuid-lowquality.jpg</code>&nbsp;- Compressed version</li></ul><h3 id="saving-to-aws-s3-and-emitting-events">Saving to AWS S3 and Emitting Events</h3><p>Once validation passes, we save the image to S3 and trigger the resize pipeline:</p><pre><code class="language-tsx">    // Save image to S3 storage
+    const contentType = getContentTypeFromFilename(filename)
+    const originalStorageKey = await saveImageBuffer(imageBuffer, storageKeys.original, contentType)
+    const originalUrl = await getImageUrl(originalStorageKey)
+
+    logger.info('Image saved to storage', { originalStorageKey, originalUrl })
+
+    // Create image metadata
+    const imageMetadata: ImageMetadata = {
+      originalFilename: filename,
+      uniqueFilename,
+      format,
+      originalStorageKey,
+      originalUrl,
+      traceId,
+      uploadedAt: new Date()
+    }
+
+    // Emit event to trigger parallel resize operations
+    await emit({
+      topic: 'image-saved',
+      data: {
+        ...imageMetadata,
+        uploadedAt: imageMetadata.uploadedAt.toISOString()
+      }
+    })
+
+    return {
+      status: 200,
+      body: {
+        message: 'Image uploaded successfully and processing started',
+        traceId,
+        imageMetadata: {
+          ...imageMetadata,
+          uploadedAt: imageMetadata.uploadedAt.toISOString()
+        }
+      }
+    }
+  } catch (error) {
+    logger.error('Upload failed', { error: error.message })
+    return {
+      status: 500,
+      body: { error: 'Internal server error' }
+    }
+  }
+}
+</code></pre><p>The&nbsp;<code>emit()</code>&nbsp;function sends an&nbsp;<code>image-saved</code>&nbsp;event with all the metadata needed for processing. Three separate resize workers will receive this event and start working immediately - all at the same time.</p><h2 id="second-step-parallel-image-resizing">Second Step: Parallel Image Resizing</h2><p>When the upload step emits the&nbsp;<code>image-saved</code>&nbsp;event, three resize workers spring into action simultaneously. Each worker specializes in creating one specific image variant, and they all work at the same time for maximum speed.</p><h3 id="setting-up-the-desktop-resizer">Setting up the Desktop Resizer</h3><p>The desktop resizer creates high-quality images optimized for large screens:</p><p><strong>Create&nbsp;<code>steps/desktop-resize.step.ts</code>:</strong></p><pre><code class="language-tsx">import { EventConfig, Handlers } from 'motia'
+import { z } from 'zod'
+import sharp from 'sharp'
+import {
+  generateStorageKeys,
+  getImageStream,
+  saveImageStream,
+  getImageUrl,
+  getResizeConfig
+} from '../shared/storage-utils'
+
+export const config: EventConfig = {
+  type: 'event',
+  name: 'DesktopResize',
+  description: 'Resize uploaded image for desktop viewing (1920px width)',
+  subscribes: ['image-saved'],
+  emits: ['desktop-resize-complete'],
+  flows: ['image-processing']
+}
+</code></pre><p>This step listens for&nbsp;<code>image-saved</code>&nbsp;events and emits&nbsp;<code>desktop-resize-complete</code>&nbsp;when finished. The event-driven design means it automatically starts working whenever an image is uploaded.</p><h3 id="using-sharp-for-high-performance-image-processing">Using Sharp for High-Performance Image Processing</h3><p>Sharp is incredibly fast because it uses native code and streams. Here's how we use it:</p><pre><code class="language-tsx">export const handler: Handlers['DesktopResize'] = async (imageMetadata, { logger, emit, traceId }) =&gt; {
+  try {
+    logger.info('Starting desktop resize operation', {
+      filename: imageMetadata.originalFilename,
+      originalKey: imageMetadata.originalStorageKey
+    })
+
+    // Get storage keys and resize configuration
+    const storageKeys = generateStorageKeys(imageMetadata.uniqueFilename)
+    const resizeConfig = getResizeConfig('desktop') // { width: 1920, quality: 90 }
+
+    // Get original image stream from S3
+    const originalStream = await getImageStream(imageMetadata.originalStorageKey)
+    
+    // Create Sharp transform stream
+    const sharpTransform = sharp()
+      .resize(resizeConfig.width, null, { 
+        withoutEnlargement: true,
+        fit: 'inside'
+      })
+      .jpeg({ quality: resizeConfig.quality || 90 })
+
+    // Process and save using streams
+    const resizedStream = originalStream.pipe(sharpTransform)
+    const outputStorageKey = await saveImageStream(resizedStream, storageKeys.desktop)
+    const outputUrl = await getImageUrl(outputStorageKey)
+
+    logger.info('Desktop resize completed', {
+      targetWidth: resizeConfig.width,
+      outputKey: outputStorageKey
+    })
+</code></pre><p>The magic happens in the Sharp transform. We pipe the original image stream through Sharp's resize operation, which processes the image in chunks without loading the entire file into memory. This makes it incredibly fast and memory-efficient.</p><h3 id="mobile-and-compression-resizers">Mobile and Compression Resizers</h3><p>The mobile and compression resizers work the same way, but with different settings:</p><p><strong>Mobile Resizer (<code>steps/mobile-resize.step.ts</code>):</strong></p><pre><code class="language-tsx">// Mobile optimization: 720px width, 85% quality
+const sharpTransform = sharp()
+  .resize(720, null, { 
+    withoutEnlargement: true,
+    fit: 'inside'
+  })
+  .jpeg({ quality: 85 })
+</code></pre><p><strong>Compression Resizer (<code>steps/lowquality-resize.step.ts</code>):</strong></p><pre><code class="language-tsx">// Heavy compression: 480px width, 60% quality
+const sharpTransform = sharp()
+  .resize(480, null, { 
+    withoutEnlargement: true,
+    fit: 'inside'
+  })
+  .jpeg({ quality: 60 })
+</code></pre><p>Each resizer emits its own completion event when done. This allows the completion tracker to monitor progress and know when all processing is finished.</p><h3 id="emitting-completion-events">Emitting Completion Events</h3><p>When each resize operation finishes, it reports back:</p><pre><code class="language-tsx">    // Emit completion event
+    await emit({
+      topic: 'desktop-resize-complete',
+      data: {
+        ...imageMetadata,
+        resizeType: 'desktop',
+        outputStorageKey,
+        outputUrl,
+        completedAt: new Date().toISOString()
+      }
+    })
+
+    logger.info('Desktop resize completed successfully', {
+      outputKey: outputStorageKey,
+      outputUrl,
+      processingTime: Date.now() - startTime
+    })
+
+  } catch (error) {
+    logger.error('Desktop resize failed', { error: error.message })
+    throw new Error(`Desktop resize failed: ${error.message}`)
+  }
+}
+</code></pre><p>The completion event includes all the original metadata plus information about what was created. This lets other parts of the system know exactly what happened and where to find the results.</p><h2 id="third-step-completion-tracking-and-orchestration">Third Step: Completion Tracking and Orchestration</h2><p>With three resize operations running in parallel, we need a way to track when everything is done. That's where the completion tracker comes in - it monitors all three processes and emits a final "all complete" event when the entire pipeline finishes.</p><h3 id="building-the-completion-tracker">Building the Completion Tracker</h3><p>The completion tracker listens for completion events from all three resizers:</p><p><strong>Create&nbsp;<code>steps/completion-tracker.step.ts</code>:</strong></p><pre><code class="language-tsx">import { EventConfig, Handlers } from 'motia'
+import { z } from 'zod'
+import type { ProcessingStatus } from '../shared/interfaces'
+
+export const config: EventConfig = {
+  type: 'event',
+  name: 'CompletionTracker',
+  description: 'Track completion of all resize operations and emit final processing-complete event',
+  subscribes: ['desktop-resize-complete', 'mobile-resize-complete', 'lowquality-resize-complete'],
+  emits: ['processing-complete'],
+  flows: ['image-processing']
+}
+</code></pre><p>This step subscribes to all three completion events and emits a final&nbsp;<code>processing-complete</code>&nbsp;event when everything is done.</p><h3 id="using-motia-state-for-progress-tracking">Using Motia State for Progress Tracking</h3><p>Motia's built-in state management lets us track progress across multiple events:</p><pre><code class="language-tsx">export const handler: Handlers['CompletionTracker'] = async (completionData, { logger, emit, traceId, state }) =&gt; {
+  try {
+    logger.info('Processing resize completion', {
+      resizeType: completionData.resizeType,
+      filename: completionData.originalFilename
+    })
+
+    // Get or initialize processing status
+    const statusKey = `processing_${traceId}`
+    let status: ProcessingStatus = state.get(statusKey) || {
+      traceId,
+      originalStorageKey: completionData.originalStorageKey,
+      desktopComplete: false,
+      mobileComplete: false,
+      lowqualityComplete: false
+    }
+
+    // Update completion status based on resize type
+    switch (completionData.resizeType) {
+      case 'desktop':
+        status.desktopComplete = true
+        break
+      case 'mobile':
+        status.mobileComplete = true
+        break
+      case 'lowquality':
+        status.lowqualityComplete = true
+        break
+    }
+
+    // Save updated status
+    state.set(statusKey, status)
+</code></pre><p>The state system lets us maintain a scoreboard of what's complete. Each time a resize finishes, we update the corresponding flag and save the state.</p><h3 id="detecting-complete-processing">Detecting Complete Processing</h3><p>Once we have the updated status, we check if everything is done:</p><pre><code class="language-tsx">    logger.info('Updated processing status', { status })
+
+    // Check if all resize operations are complete
+    const allComplete = status.desktopComplete &amp;&amp; status.mobileComplete &amp;&amp; status.lowqualityComplete
+
+    if (allComplete) {
+      status.completedAt = new Date()
+      state.set(statusKey, status)
+
+      // Emit final completion event
+      await emit({
+        topic: 'processing-complete',
+        data: {
+          ...status,
+          completedAt: status.completedAt.toISOString()
+        }
+      })
+
+      logger.info('All processing completed successfully', {
+        traceId,
+        finalStatus: status,
+        processingTime: Date.now() - startTime
+      })
+    } else {
+      logger.info('Waiting for remaining operations', {
+        pendingOperations: {
+          desktop: !status.desktopComplete,
+          mobile: !status.mobileComplete,
+          lowquality: !status.lowqualityComplete
+        }
+      })
+    }
+
+  } catch (error) {
+    logger.error('Completion tracking failed', { error: error.message })
+    throw new Error(`Completion tracking failed: ${error.message}`)
+  }
+}
+</code></pre><p>The completion tracker only emits the final event when all three resize operations are done. Until then, it just logs what's still pending.</p><h3 id="why-this-architecture-works">Why This Architecture Works</h3><p>This completion tracking approach has several benefits:</p><p><strong>Resilient</strong>: If one resize fails, the others keep working and the tracker knows what's missing</p><p><strong>Scalable</strong>: Adding new resize variants just means updating the tracker to listen for more events</p><p><strong>Observable</strong>: You can see exactly what's happening at each step through the logs</p><p><strong>Flexible</strong>: The final completion event can trigger additional processing like sending notifications or updating databases</p><p>The event-driven design means each piece does one job well. The upload handler doesn't know about resizing. The resizers don't know about completion tracking. The completion tracker doesn't know about image processing. This separation makes the system easy to understand, test, and modify.</p><h2 id="running-the-complete-project">Running the Complete Project</h2><p>Now that you've built all the components, let's see the image processing pipeline in action. This section shows how to start the system and demonstrates real image processing workflows.</p><h3 id="starting-the-system">Starting the System</h3><p>First, start your Motia development server:</p><pre><code class="language-bash">npm run dev
+</code></pre><p>The logs show all your steps being created - upload handler, desktop resizer, mobile resizer, compression resizer, and completion tracker. When you see "Server ready and listening on port 3000," your system is running.</p><h3 id="testing-image-upload">Testing Image Upload</h3><p>Upload a test image to see the complete processing flow:</p><pre><code class="language-bash"># First, convert an image to base64
+node scripts/convert-to-base64.js path/to/your/test-image.jpg
+
+# This creates a JSON file you can use for testing
+</code></pre><p>The conversion script will show you the base64 data and save it to a JSON file. Use this data to test the upload:</p><pre><code class="language-bash">curl -X POST http://localhost:3000/upload-image \
+  -H "Content-Type: application/json" \
+  -d '{
+    "filename": "test-image.jpg",
+    "data": "base64-encoded-image-data-here"
+  }'
+</code></pre><figure class="kg-card kg-image-card"><img src="https://blog.motia.dev/content/images/2025/08/Screenshot-2025-08-15-at-14.36.00.png" class="kg-image" alt="" loading="lazy" width="2000" height="987" srcset="https://blog.motia.dev/content/images/size/w600/2025/08/Screenshot-2025-08-15-at-14.36.00.png 600w, https://blog.motia.dev/content/images/size/w1000/2025/08/Screenshot-2025-08-15-at-14.36.00.png 1000w, https://blog.motia.dev/content/images/size/w1600/2025/08/Screenshot-2025-08-15-at-14.36.00.png 1600w, https://blog.motia.dev/content/images/2025/08/Screenshot-2025-08-15-at-14.36.00.png 2378w" sizes="(min-width: 720px) 720px"></figure><figure class="kg-card kg-image-card"><img src="https://blog.motia.dev/content/images/2025/08/Screenshot-2025-08-15-at-14.35.41.png" class="kg-image" alt="" loading="lazy" width="2000" height="1043" srcset="https://blog.motia.dev/content/images/size/w600/2025/08/Screenshot-2025-08-15-at-14.35.41.png 600w, https://blog.motia.dev/content/images/size/w1000/2025/08/Screenshot-2025-08-15-at-14.35.41.png 1000w, https://blog.motia.dev/content/images/size/w1600/2025/08/Screenshot-2025-08-15-at-14.35.41.png 1600w, https://blog.motia.dev/content/images/size/w2400/2025/08/Screenshot-2025-08-15-at-14.35.41.png 2400w" sizes="(min-width: 720px) 720px"></figure><h3 id="watching-the-processing-pipeline">Watching the Processing Pipeline</h3><p>When you upload an image, watch the logs to see the complete workflow:</p><p><strong>1. Upload and Validation:</strong></p><pre><code>[2:32:54 PM] 7WUTP-4774582 [INFO] UploadImage Upload Image Step – Starting image upload process
+├ filename: test-image.png
+├ uploadType: base64
+├ fileSize: 28294
+└ timestamp: 2025-08-15T13:32:54.868Z
+[2:32:54 PM] 7WUTP-4774582 [INFO] UploadImage Upload Image Step – Base64 data validation passed
+├ filename: test-image.png
+├ uploadType: base64
+├ fileSize: 28294
+├ timestamp: 2025-08-15T13:32:54.869Z
+├ dataValidation: passed
+└ dataLength: 37728
+[2:32:54 PM] 7WUTP-4774582 [INFO] UploadImage Upload Image Step – Generated unique filename and storage keys
+├ filename: test-image.png
+├ uploadType: base64
+├ fileSize: 28294
+├ timestamp: 2025-08-15T13:32:54.870Z
+├ uniqueFilename: test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+├ originalStorageKey: originals/test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+├ format: png
+└ keyGeneration: success
+[2:32:55 PM] 7WUTP-4774582 [INFO] UploadImage Upload Image Step – Successfully saved image to storage
+├ filename: test-image.png
+├ uploadType: base64
+├ fileSize: 28294
+├ timestamp: 2025-08-15T13:32:55.068Z
+├ originalStorageKey: originals/test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+├ originalUrl: https://&lt;your-s3-buclet&gt;.s3.&lt;your-region&gt;.amazonaws.com/originals/test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+└ storageSave: success
+[2:32:55 PM] 7WUTP-4774582 [INFO] UploadImage Upload Image Step – Image buffer validation passed
+├ filename: test-image.png
+├ uploadType: base64
+├ fileSize: 28294
+├ timestamp: 2025-08-15T13:32:55.069Z
+├ bufferSize: 28294
+└ bufferValidation: success
+[2:32:55 PM] 7WUTP-4774582 [INFO] UploadImage Upload Image Step – Created image metadata
+├ filename: test-image.png
+├ uploadType: base64
+├ fileSize: 28294
+├ timestamp: 2025-08-15T13:32:55.069Z
+├ imageMetadata: {
+│ ├ originalFilename: test-image.png
+│ ├ uniqueFilename: test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+│ ├ format: png
+│ ├ originalStorageKey: originals/test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+│ ├ originalUrl: https://&lt;your-s3-buclet&gt;.s3.&lt;your-region&gt;.amazonaws.com/originals/test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+│ ├ traceId: 7WUTP-4774582
+│ └ uploadedAt: 2025-08-15T13:32:55.069Z
+│ }
+└ metadataCreation: success
+[2:32:55 PM] 7WUTP-4774582 [INFO] UploadImage Upload Image Step – Successfully emitted image-saved event
+├ filename: test-image.png
+├ uploadType: base64
+├ fileSize: 28294
+├ timestamp: 2025-08-15T13:32:55.078Z
+├ eventTopic: image-saved
+├ eventEmission: success
+└ processingTriggered: true
+[2:32:55 PM] 7WUTP-4774582 [INFO] UploadImage Upload Image Step – Upload completed successfully
+├ filename: test-image.png
+├ uploadType: base64
+├ fileSize: 28294
+├ timestamp: 2025-08-15T13:32:55.078Z
+├ processingTimeMs: 210
+└ uploadSuccess: true</code></pre><p><strong>2. Parallel Resize Operations:</strong></p><pre><code>[2:32:55 PM] 7WUTP-4774582 [INFO] MobileResize Mobile Resize Step – Starting mobile resize operation
+├ originalFilename: test-image.png
+├ uniqueFilename: test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+├ originalStorageKey: originals/test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+└ timestamp: 2025-08-15T13:32:55.378Z
+[2:32:55 PM] 7WUTP-4774582 [INFO] LowQualityResize Low-Quality Resize Step – Starting low-quality resize operation
+├ originalFilename: test-image.png
+├ uniqueFilename: test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+├ originalStorageKey: originals/test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+└ timestamp: 2025-08-15T13:32:55.385Z
+[2:32:55 PM] 7WUTP-4774582 [INFO] DesktopResize Desktop Resize Step – Starting desktop resize operation
+├ originalFilename: test-image.png
+├ uniqueFilename: test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+├ originalStorageKey: originals/test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+└ timestamp: 2025-08-15T13:32:55.386Z
+[2:32:55 PM] 7WUTP-4774582 [INFO] MobileResize Mobile Resize Step – Retrieved original image stream from storage
+├ originalFilename: test-image.png
+├ uniqueFilename: test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+├ originalStorageKey: originals/test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+└ timestamp: 2025-08-15T13:32:55.378Z
+[2:32:55 PM] 7WUTP-4774582 [INFO] LowQualityResize Low-Quality Resize Step – Retrieved original image stream from storage
+├ originalFilename: test-image.png
+├ uniqueFilename: test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+├ originalStorageKey: originals/test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+└ timestamp: 2025-08-15T13:32:55.385Z
+[2:32:55 PM] 7WUTP-4774582 [INFO] DesktopResize Desktop Resize Step – Retrieved original image stream from storage
+├ originalFilename: test-image.png
+├ uniqueFilename: test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+├ originalStorageKey: originals/test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+└ timestamp: 2025-08-15T13:32:55.386Z
+[2:32:55 PM] 7WUTP-4774582 [INFO] MobileResize Mobile Resize Step – Resize operation completed
+├ originalFilename: test-image.png
+├ uniqueFilename: test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+├ originalStorageKey: originals/test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+├ timestamp: 2025-08-15T13:32:55.378Z
+├ targetWidth: 720
+└ outputStorageKey: mobile/test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c-mobile.png
+[2:32:55 PM] 7WUTP-4774582 [INFO] MobileResize Mobile Resize Step – Mobile resize completed successfully
+├ originalFilename: test-image.png
+├ uniqueFilename: test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+├ originalStorageKey: originals/test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+├ timestamp: 2025-08-15T13:32:55.378Z
+├ outputStorageKey: mobile/test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c-mobile.png
+├ outputUrl: https://&lt;your-s3-buclet&gt;.s3.&lt;your-region&gt;.amazonaws.com/originals/test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+└ processingTimeMs: 266
+[2:32:55 PM] 7WUTP-4774582 [INFO] DesktopResize Desktop Resize Step – Resize operation completed
+├ originalFilename: test-image.png
+├ uniqueFilename: test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+├ originalStorageKey: originals/test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+├ timestamp: 2025-08-15T13:32:55.386Z
+├ targetWidth: 1920
+└ outputStorageKey: desktop/test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c-desktop.png
+[2:32:55 PM] 7WUTP-4774582 [INFO] DesktopResize Desktop Resize Step – Desktop resize completed successfully
+├ originalFilename: test-image.png
+├ uniqueFilename: test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+├ originalStorageKey: originals/test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+├ timestamp: 2025-08-15T13:32:55.386Z
+├ outputStorageKey: desktop/test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c-desktop.png
+├ outputUrl: https://&lt;your-s3-buclet&gt;.s3.&lt;your-region&gt;.amazonaws.com/originals/test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+└ processingTimeMs: 277
+[2:32:55 PM] 7WUTP-4774582 [INFO] LowQualityResize Low-Quality Resize Step – Resize operation completed
+├ originalFilename: test-image.png
+├ uniqueFilename: test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+├ originalStorageKey: originals/test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+├ timestamp: 2025-08-15T13:32:55.385Z
+├ targetWidth: 480
+├ quality: 60
+└ outputStorageKey: lowquality/test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c-lowquality.png
+[2:32:55 PM] 7WUTP-4774582 [INFO] LowQualityResize Low-Quality Resize Step – Low-quality resize completed successfully
+├ originalFilename: test-image.png
+├ uniqueFilename: test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+├ originalStorageKey: originals/test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+├ timestamp: 2025-08-15T13:32:55.385Z
+├ outputStorageKey: lowquality/test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c-lowquality.png
+├ outputUrl: https://&lt;your-s3-buclet&gt;.s3.&lt;your-region&gt;.amazonaws.com/originals/test-image_373b06b5-4671-46c2-ab08-07a7bccceb3c.png
+└ processingTimeMs: 285</code></pre><p><strong>3. Completion Tracking:</strong></p><pre><code>[2:32:55 PM] 7WUTP-4774582 [INFO] CompletionTracker Completion Tracker Step – Processing resize completion
+├ resizeType: mobile
+├ originalFilename: test-image.png
+└ timestamp: 2025-08-15T13:32:55.935Z
+[2:32:55 PM] 7WUTP-4774582 [INFO] CompletionTracker Completion Tracker Step – Updated processing status
+├ resizeType: mobile
+├ originalFilename: test-image.png
+├ timestamp: 2025-08-15T13:32:55.935Z
+├ status: {
+│ └ mobileComplete: true
+└ }
+[2:32:55 PM] 7WUTP-4774582 [INFO] CompletionTracker Completion Tracker Step – Waiting for remaining operations
+├ resizeType: mobile
+├ originalFilename: test-image.png
+├ timestamp: 2025-08-15T13:32:55.935Z
+├ pendingOperations: {
+│ ├ desktop: true
+│ ├ mobile: false
+│ └ lowquality: true
+└ }
+[2:32:55 PM] 7WUTP-4774582 [INFO] CompletionTracker Completion Tracker Step – Processing resize completion
+├ resizeType: desktop
+├ originalFilename: test-image.png
+└ timestamp: 2025-08-15T13:32:55.944Z
+[2:32:55 PM] 7WUTP-4774582 [INFO] CompletionTracker Completion Tracker Step – Updated processing status
+├ resizeType: desktop
+├ originalFilename: test-image.png
+├ timestamp: 2025-08-15T13:32:55.944Z
+├ status: {
+│ └ desktopComplete: true
+└ }
+[2:32:55 PM] 7WUTP-4774582 [INFO] CompletionTracker Completion Tracker Step – Waiting for remaining operations
+├ resizeType: desktop
+├ originalFilename: test-image.png
+├ timestamp: 2025-08-15T13:32:55.944Z
+├ pendingOperations: {
+│ ├ desktop: false
+│ ├ mobile: true
+│ └ lowquality: true
+└ }
+[2:32:55 PM] 7WUTP-4774582 [INFO] CompletionTracker Completion Tracker Step – Processing resize completion
+├ resizeType: lowquality
+├ originalFilename: test-image.png
+└ timestamp: 2025-08-15T13:32:55.962Z
+[2:32:55 PM] 7WUTP-4774582 [INFO] CompletionTracker Completion Tracker Step – Updated processing status
+├ resizeType: lowquality
+├ originalFilename: test-image.png
+├ timestamp: 2025-08-15T13:32:55.962Z
+├ status: {
+│ └ lowqualityComplete: true
+└ }
+[2:32:55 PM] 7WUTP-4774582 [INFO] CompletionTracker Completion Tracker Step – Waiting for remaining operations
+├ resizeType: lowquality
+├ originalFilename: test-image.png
+├ timestamp: 2025-08-15T13:32:55.962Z
+├ pendingOperations: {
+│ ├ desktop: true
+│ ├ mobile: true
+│ └ lowquality: false
+└ }</code></pre><h3 id="checking-your-s3-bucket">Checking Your S3 Bucket</h3><p>After processing completes, check your S3 bucket to see the organized results:</p><pre><code>your-bucket/
+├── originals/
+│   └── test-image_uuid.jpg          # Original uploaded image
+├── desktop/
+│   └── test-image_uuid-desktop.jpg  # 1920px desktop version
+├── mobile/
+│   └── test-image_uuid-mobile.jpg   # 720px mobile version
+└── lowquality/
+    └── test-image_uuid-lowquality.jpg # 480px compressed version
+</code></pre><p>Each image is properly organized and has a unique filename to prevent conflicts.</p><figure class="kg-card kg-image-card"><img src="https://blog.motia.dev/content/images/2025/08/Screenshot-2025-08-15-at-15.22.54.png" class="kg-image" alt="" loading="lazy" width="1661" height="391" srcset="https://blog.motia.dev/content/images/size/w600/2025/08/Screenshot-2025-08-15-at-15.22.54.png 600w, https://blog.motia.dev/content/images/size/w1000/2025/08/Screenshot-2025-08-15-at-15.22.54.png 1000w, https://blog.motia.dev/content/images/size/w1600/2025/08/Screenshot-2025-08-15-at-15.22.54.png 1600w, https://blog.motia.dev/content/images/2025/08/Screenshot-2025-08-15-at-15.22.54.png 1661w" sizes="(min-width: 720px) 720px"></figure><figure class="kg-card kg-image-card"><img src="https://blog.motia.dev/content/images/2025/08/Screenshot-2025-08-15-at-15.23.10.png" class="kg-image" alt="" loading="lazy" width="1673" height="455" srcset="https://blog.motia.dev/content/images/size/w600/2025/08/Screenshot-2025-08-15-at-15.23.10.png 600w, https://blog.motia.dev/content/images/size/w1000/2025/08/Screenshot-2025-08-15-at-15.23.10.png 1000w, https://blog.motia.dev/content/images/size/w1600/2025/08/Screenshot-2025-08-15-at-15.23.10.png 1600w, https://blog.motia.dev/content/images/2025/08/Screenshot-2025-08-15-at-15.23.10.png 1673w" sizes="(min-width: 720px) 720px"></figure><h3 id="testing-different-image-formats">Testing Different Image Formats</h3><p>Try uploading different image formats to see how the system handle them:</p><p><strong>JPEG Image:</strong></p><pre><code class="language-bash"># Upload a JPEG - gets processed as-is with JPEG compression
+curl -X POST http://localhost:3000/upload-image \
+  -H "Content-Type: application/json" \
+  -d '{"filename": "photo.jpg", "data": "base64-data"}'
+</code></pre><p><strong>PNG Image:</strong></p><pre><code class="language-bash"># Upload a PNG - gets converted to JPEG for smaller file sizes
+curl -X POST http://localhost:3000/upload-image \
+  -H "Content-Type: application/json" \
+  -d '{"filename": "graphic.png", "data": "base64-data"}'
+</code></pre><p><strong>WebP Image:</strong></p><pre><code class="language-bash"># Upload a WebP - gets converted to JPEG for better compatibility
+curl -X POST http://localhost:3000/upload-image \
+  -H "Content-Type: application/json" \
+  -d '{"filename": "modern.webp", "data": "base64-data"}'
+</code></pre><h3 id="testing-error-handling">Testing Error Handling</h3><p>Try uploading invalid data to see the error handling:</p><p><strong>Invalid Format:</strong></p><pre><code class="language-bash">curl -X POST http://localhost:3000/upload-image \
+  -H "Content-Type: application/json" \
+  -d '{"filename": "document.pdf", "data": "base64-data"}'
+
+# Response: "Invalid image format - Only JPEG, PNG, and WebP formats are supported"
+</code></pre><p><strong>File Too Large:</strong></p><pre><code class="language-bash"># Upload a massive image
+curl -X POST http://localhost:3000/upload-image \
+  -H "Content-Type: application/json" \
+  -d '{"filename": "huge.jpg", "data": "very-long-base64-string"}'
+
+# Response: "File too large - Maximum file size is 50MB"
+</code></pre><h3 id="common-issues-we-faced">Common Issues We Faced</h3><p><strong>PayloadTooLargeError with Large Images</strong>: During testing with a 1.3MB image, we hit Express body parser limits. Base64 encoding increases file size by ~33%, so our 1.3MB image became 1.7MB. The default Express limit couldn't handle it.</p><p><strong>Quick Fix</strong>: Update your&nbsp;<code>server.config.js</code>:</p><pre><code class="language-javascript">module.exports = {
+  express: {
+    bodyParser: {
+      json: { limit: '50mb' },
+      urlencoded: { limit: '50mb', extended: true }
+    }
+  }
+};
+</code></pre><p>Restart your server and large images will upload successfully. This configuration allows up to 50MB payloads, which handles most real-world image uploads.</p><h3 id="performance-testing">Performance Testing</h3><p>Upload multiple images simultaneously to see parallel processing:</p><pre><code class="language-bash"># Upload 3 images at the same time
+curl -X POST http://localhost:3000/upload-image \
+  -H "Content-Type: application/json" \
+  -d '{"filename": "image1.jpg", "data": "base64-1"}' &amp;
+
+curl -X POST http://localhost:3000/upload-image \
+  -H "Content-Type: application/json" \
+  -d '{"filename": "image2.jpg", "data": "base64-2"}' &amp;
+
+curl -X POST http://localhost:3000/upload-image \
+  -H "Content-Type: application/json" \
+  -d '{"filename": "image3.jpg", "data": "base64-3"}' &amp;
+</code></pre><p>Watch the logs to see how Motia handles multiple processing pipelines simultaneously. Each image gets its own trace ID and processes independently.</p><h2 id="conclusion">Conclusion</h2><p>You've built a complete image processing pipeline that handles uploads, validates files, stores them safely in the cloud, and creates multiple optimized versions - all automatically and in parallel. The system handles format conversion, error recovery, and completion tracking, all using <a href="https://github.com/motiadev/motia?ref=blog.motia.dev" rel="noreferrer">Motia's</a> event-driven architecture.</p><p>The key benefits of this approach:</p><ul><li><strong>Lightning fast processing</strong>&nbsp;- Three resize operations run simultaneously instead of sequentially</li><li><strong>Event-driven reliability</strong>&nbsp;- Each step does one job well and passes work along through events</li><li><strong>Easy to extend</strong>&nbsp;- Add new image sizes by creating new resize workers that listen for the same events</li><li><strong>Production ready</strong>&nbsp;- Built-in error handling, logging, and cloud storage integration</li></ul><p>The event-driven architecture makes it simple to add new features like watermarking, format conversion, or thumbnail generation. Just create new steps that listen for the&nbsp;<code>image-saved</code>&nbsp;event and emit their own completion events. The completion tracker can easily be updated to monitor the new operations.</p><p>Your users upload one image and get multiple optimized versions in seconds. Your mobile users get fast-loading compressed images. Your desktop users get crisp high-quality versions. And your servers handle it all automatically, scaling with your traffic and recovering gracefully from errors.</p><p>The <strong>upload → validate → store → parallel process → track completion flow</strong> means your image processing system is ready for production workloads from day one.</p><h3 id="thanks-for-reading-till-the-end-please-star-%E2%AD%90%EF%B8%8F-our-repo-while-youre-here">Thanks for reading till the end, Please Star (⭐️) our repo, while you're here.</h3><figure class="kg-card kg-bookmark-card"><a class="kg-bookmark-container" href="https://github.com/motiadev/motia?ref=blog.motia.dev"><div class="kg-bookmark-content"><div class="kg-bookmark-title">GitHub - MotiaDev/motia: Modern Backend Framework that unifies APIs, background jobs, workflows, and AI agents into a single cohesive system with built-in observability and state management.</div><div class="kg-bookmark-description">Modern Backend Framework that unifies APIs, background jobs, workflows, and AI agents into a single cohesive system with built-in observability and state management. - MotiaDev/motia</div><div class="kg-bookmark-metadata"><img class="kg-bookmark-icon" src="https://blog.motia.dev/content/images/icon/pinned-octocat-093da3e6fa40-4.svg" alt=""><span class="kg-bookmark-author">GitHub</span><span class="kg-bookmark-publisher">MotiaDev</span></div></div><div class="kg-bookmark-thumbnail"><img src="https://blog.motia.dev/content/images/thumbnail/motia" alt="" onerror="this.style.display = 'none'"></div></a></figure>
+        </div>
+
+            <div class="article-tags">
+                <div class="article-tags__cloud tagcloud"><a href="/tag/backend/">backend</a><a href="/tag/motia/">motia</a><a href="/tag/aws/">aws</a><a href="/tag/s3/">s3</a><a href="/tag/developer/">developer</a><a href="/tag/typescript/">typescript</a><a href="/tag/nodejs/">nodejs</a><a href="/tag/workflow/">workflow</a></div>
+            </div>
+
+            <div class="article-sharing">
+                <div class="sharing-buttons">
+    <h4 class="sharing-buttons__title meta-title">Share with friends</h4>
+    <ul class="sharing-buttons__list">
+        <li class="sharing-buttons__list-item">
+            <a href="https://www.facebook.com/sharer.php?u=https://blog.motia.dev/building-a-lightning-fast-image-resizer-with-motia-and-aws-s3/" title="Share on Facebook" target="_blank" rel="noopener" class="sharing-buttons__list-link" data-social="facebook"><svg width="24" height="24" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M12 2C6.5 2 2 6.5 2 12c0 5 3.7 9.1 8.4 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.3v7C18.3 21.1 22 17 22 12c0-5.5-4.5-10-10-10z" fill="currentColor"></path></svg>
+</a>
+        </li>
+        <li class="sharing-buttons__list-item">
+            <a href="https://twitter.com/intent/tweet?url=https://blog.motia.dev/building-a-lightning-fast-image-resizer-with-motia-and-aws-s3/&amp;text=Building%20a%20Lightning-Fast%20Image%20Resizer%20with%20Motia%20and%20AWS%20S3" title="Share on Twitter" target="_blank" rel="noopener" class="sharing-buttons__list-link" data-social="twitter"><svg width="24" height="24" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M22.23,5.924c-0.736,0.326-1.527,0.547-2.357,0.646c0.847-0.508,1.498-1.312,1.804-2.27 c-0.793,0.47-1.671,0.812-2.606,0.996C18.324,4.498,17.257,4,16.077,4c-2.266,0-4.103,1.837-4.103,4.103 c0,0.322,0.036,0.635,0.106,0.935C8.67,8.867,5.647,7.234,3.623,4.751C3.27,5.357,3.067,6.062,3.067,6.814 c0,1.424,0.724,2.679,1.825,3.415c-0.673-0.021-1.305-0.206-1.859-0.513c0,0.017,0,0.034,0,0.052c0,1.988,1.414,3.647,3.292,4.023 c-0.344,0.094-0.707,0.144-1.081,0.144c-0.264,0-0.521-0.026-0.772-0.074c0.522,1.63,2.038,2.816,3.833,2.85 c-1.404,1.1-3.174,1.756-5.096,1.756c-0.331,0-0.658-0.019-0.979-0.057c1.816,1.164,3.973,1.843,6.29,1.843 c7.547,0,11.675-6.252,11.675-11.675c0-0.178-0.004-0.355-0.012-0.531C20.985,7.47,21.68,6.747,22.23,5.924z" fill="currentColor"></path></svg>
+</a>
+        </li>
+        <li class="sharing-buttons__list-item">
+            <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https://blog.motia.dev/building-a-lightning-fast-image-resizer-with-motia-and-aws-s3/&amp;title=Building%20a%20Lightning-Fast%20Image%20Resizer%20with%20Motia%20and%20AWS%20S3" title="Share on LinkedIn" target="_blank" rel="noopener" class="sharing-buttons__list-link" data-social="linkedin"><svg width="24" height="24" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M19.7,3H4.3C3.582,3,3,3.582,3,4.3v15.4C3,20.418,3.582,21,4.3,21h15.4c0.718,0,1.3-0.582,1.3-1.3V4.3 C21,3.582,20.418,3,19.7,3z M8.339,18.338H5.667v-8.59h2.672V18.338z M7.004,8.574c-0.857,0-1.549-0.694-1.549-1.548 c0-0.855,0.691-1.548,1.549-1.548c0.854,0,1.547,0.694,1.547,1.548C8.551,7.881,7.858,8.574,7.004,8.574z M18.339,18.338h-2.669 v-4.177c0-0.996-0.017-2.278-1.387-2.278c-1.389,0-1.601,1.086-1.601,2.206v4.249h-2.667v-8.59h2.559v1.174h0.037 c0.356-0.675,1.227-1.387,2.526-1.387c2.703,0,3.203,1.779,3.203,4.092V18.338z" fill="currentColor"></path></svg>
+</a>
+        </li>
+        <li class="sharing-buttons__list-item">
+            <button class="sharing-buttons__list-link" title="Copy link" data-social="copy-link" data-copy-link="https://blog.motia.dev/building-a-lightning-fast-image-resizer-with-motia-and-aws-s3/">
+                <svg width="24" height="24" version="1.1" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path d="M579.8 267.7c56.5-56.5 56.5-148 0-204.5c-50-50-128.8-56.5-186.3-15.4l-1.6 1.1c-14.4 10.3-17.7 30.3-7.4 44.6s30.3 17.7 44.6 7.4l1.6-1.1c32.1-22.9 76-19.3 103.8 8.6c31.5 31.5 31.5 82.5 0 114L422.3 334.8c-31.5 31.5-82.5 31.5-114 0c-27.9-27.9-31.5-71.8-8.6-103.8l1.1-1.6c10.3-14.4 6.9-34.4-7.4-44.6s-34.4-6.9-44.6 7.4l-1.1 1.6C206.5 251.2 213 330 263 380c56.5 56.5 148 56.5 204.5 0L579.8 267.7zM60.2 244.3c-56.5 56.5-56.5 148 0 204.5c50 50 128.8 56.5 186.3 15.4l1.6-1.1c14.4-10.3 17.7-30.3 7.4-44.6s-30.3-17.7-44.6-7.4l-1.6 1.1c-32.1 22.9-76 19.3-103.8-8.6C74 372 74 321 105.5 289.5L217.7 177.2c31.5-31.5 82.5-31.5 114 0c27.9 27.9 31.5 71.8 8.6 103.9l-1.1 1.6c-10.3 14.4-6.9 34.4 7.4 44.6s34.4 6.9 44.6-7.4l1.1-1.6C433.5 260.8 427 182 377 132c-56.5-56.5-148-56.5-204.5 0L60.2 244.3z" fill="currentColor"/></svg>
+                <span class="sharing-buttons__tooltip" role="tooltip" aria-hidden="true">Link copied</span>
+            </button>
+        </li>
+    </ul>
+</div>
+            </div>
+
+            <div class="article-authors">
+                    <div class="author-box" data-author-bio="true">
+        <a href="/author/rohit-ghumare/" aria-hidden="true" tabindex="-1" class="author-box__avatar">
+                <figure class="author-box__avatar-figure">
+                    <img width="70" height="70" class="author-box__avatar-image" src="/content/images/size/w364/2025/07/AVATAR_0001_2.png" alt="Motia Team" loading="lazy">
+                </figure>
+        </a>
+        <div class="author-box__info">
+            <h5 class="author-box__name">
+                <span class="visually-hidden">Posted by</span>
+                <a href="/author/rohit-ghumare/" class="author-box__name-link">Motia Team</a>
+            </h5>
+                <p class="author-box__description">Head of Developer Relations</p>
+        </div>
+    </div>
+            </div>
+
+                <div class="article-newsletter">
+                    <div class="newsletter-box">
+    <h3 class="newsletter-box__title meta-title">Stay in the loop</h3>
+    <p class="newsletter-box__info">Get the latest updates about Motia - Modern Unified Backend Framework!</p>
+    <form class="newsletter-box__form" data-members-form="signup" data-theme="reset">
+        <div class="newsletter-box__form-field">
+            <label for="newsletter-box-email-input" class="visually-hidden">Enter your email</label>
+            <input id="newsletter-box-email-input" class="newsletter-box__form-input" type="email" name="email" placeholder="Enter your email" required data-members-email>
+            <button class="newsletter-box__form-submit" type="submit">Subscribe</button>
+        </div>
+        <p class="newsletter-box__message" data-message="loading">Processing your application...</p>
+        <p class="newsletter-box__message" data-message="success">Success! Please check your inbox and click the link to confirm your subscription.</p>
+        <p class="newsletter-box__message" data-message="error">Sorry, something went wrong. Please try again.</p>
+    </form>
+</div>
+                </div>
+    </div>
+
+    <footer class="article-footer">
+            
+<div class="related-posts section" data-canvas-grid="container">
+    <h3 class="related-posts__title section-title">You might also like</h3>
+    <div class="related-posts__grid grid">
+            <article class="post-card post tag-developer tag-whatsapp tag-api tag-workflow tag-templates tag-backend tag-motia" data-layout="" data-has-featured-image="true">
+
+    
+    <a href="/building-a-whatsapp-ai-health-and-fitness-agent-with-motia-and-openai/" class="post-card__media" tabindex="-1">
+        <picture class="post-card__figure">
+            <source
+                srcset="/content/images/size/w364/format/webp/2025/08/Blog-Thumbanail@4x-1.png 364w,/content/images/size/w562/format/webp/2025/08/Blog-Thumbanail@4x-1.png 562w,/content/images/size/w760/format/webp/2025/08/Blog-Thumbanail@4x-1.png 760w,/content/images/size/w958/format/webp/2025/08/Blog-Thumbanail@4x-1.png 958w,/content/images/size/w1160/format/webp/2025/08/Blog-Thumbanail@4x-1.png 1160w,/content/images/size/w1520/format/webp/2025/08/Blog-Thumbanail@4x-1.png 1520w,/content/images/size/w1916/format/webp/2025/08/Blog-Thumbanail@4x-1.png 1916w"
+                sizes="(min-width: 1280px) 265px, (min-width: 1000px) 25vw, (min-width: 600px) 50vw, 44vw">
+            <img class="post-card__image"
+                width="5" height="3"
+                src="/content/images/size/w760/format/webp/2025/08/Blog-Thumbanail@4x-1.png"
+                loading="lazy"
+                alt="Building a WhatsApp AI Health and Fitness Agent with Motia and OpenAI"
+                onload="this.setAttribute('data-loaded', true)">
+        </picture>
+    </a>
+
+    <div class="post-card__content">
+            <a href="/tag/developer/" class="post-card__primary-tag" rel="tag">developer</a>
+        <a href="/building-a-whatsapp-ai-health-and-fitness-agent-with-motia-and-openai/" class="post-card__content-link">
+            <h2 class="post-card__title">
+                <span class="post-card__title-inner">Building a WhatsApp AI Health and Fitness Agent with Motia and OpenAI</span>
+            </h2>
+            
+        </a>
+        <div class="post-card__footer">
+                <span class="post-card__meta post-card__meta--author">
+        <span class="post-card__meta-info">By</span>
+        <a href="https://blog.motia.dev/author/rohit-ghumare/" class="post-card__meta-link">Motia Team</a>
+    </span>
+
+                <time class="post-card__meta post-card__meta--date" datetime="2025-08-04">Aug 4, 2025</time>
+
+            <span class="post-card__meta post-card__meta--read-time">16 min read</span>
+        </div>
+    </div>
+
+</article>
+            <article class="post-card post tag-twitter tag-tweet tag-devto-2 tag-developer tag-viral" data-layout="" data-has-featured-image="true">
+
+    
+    <a href="/how-to-turn-dev-to-blogs-into-viral-tweets/" class="post-card__media" tabindex="-1">
+        <picture class="post-card__figure">
+            <source
+                srcset="/content/images/size/w364/format/webp/2025/07/Blog-Thumbanail@2x.png 364w,/content/images/size/w562/format/webp/2025/07/Blog-Thumbanail@2x.png 562w,/content/images/size/w760/format/webp/2025/07/Blog-Thumbanail@2x.png 760w,/content/images/size/w958/format/webp/2025/07/Blog-Thumbanail@2x.png 958w,/content/images/size/w1160/format/webp/2025/07/Blog-Thumbanail@2x.png 1160w,/content/images/size/w1520/format/webp/2025/07/Blog-Thumbanail@2x.png 1520w,/content/images/size/w1916/format/webp/2025/07/Blog-Thumbanail@2x.png 1916w"
+                sizes="(min-width: 1280px) 265px, (min-width: 1000px) 25vw, (min-width: 600px) 50vw, 44vw">
+            <img class="post-card__image"
+                width="5" height="3"
+                src="/content/images/size/w760/format/webp/2025/07/Blog-Thumbanail@2x.png"
+                loading="lazy"
+                alt="How to turn Dev.to blogs into Viral Tweets 🔥"
+                onload="this.setAttribute('data-loaded', true)">
+        </picture>
+    </a>
+
+    <div class="post-card__content">
+            <a href="/tag/twitter/" class="post-card__primary-tag" rel="tag">twitter</a>
+        <a href="/how-to-turn-dev-to-blogs-into-viral-tweets/" class="post-card__content-link">
+            <h2 class="post-card__title">
+                <span class="post-card__title-inner">How to turn Dev.to blogs into Viral Tweets 🔥</span>
+            </h2>
+            
+        </a>
+        <div class="post-card__footer">
+                <span class="post-card__meta post-card__meta--author">
+        <span class="post-card__meta-info">By</span>
+        <a href="https://blog.motia.dev/author/rohit-ghumare/" class="post-card__meta-link">Motia Team</a>
+    </span>
+
+                <time class="post-card__meta post-card__meta--date" datetime="2025-07-15">Jul 15, 2025</time>
+
+            <span class="post-card__meta post-card__meta--read-time">10 min read</span>
+        </div>
+    </div>
+
+</article>
+    </div>
+</div>
+
+
+        
+            <div class="article-comments section" data-canvas-grid="content">
+                <div class="comments">
+                    
+        <script defer src="https://cdn.jsdelivr.net/ghost/comments-ui@~1.2/umd/comments-ui.min.js" data-locale="en" data-ghost-comments="https://blog.motia.dev/" data-api="https://motia.ghost.io/ghost/api/content/" data-admin="https://motia.ghost.io/ghost/" data-key="60a5c5eb6662c8dc6942620537" data-title="null" data-count="true" data-post-id="689f38e15f934a0001e47512" data-color-scheme="auto" data-avatar-saturation="60" data-accent-color="#2f7eff" data-comments-enabled="all" data-publication="Motia" crossorigin="anonymous"></script>
+    
+                </div>
+            </div>
+    </footer>
+
+</article>
+
+
+        </main>
+
+        <footer id="site-footer" class="site-footer" data-canvas-grid="container">
+
+    <div class="site-footer__content">
+
+        <div class="site-footer__navigation">
+                <nav class="nav-secondary">
+        <ul class="nav-secondary__menu">
+            <li class="nav-secondary__menu-item">
+                <a class="nav-secondary__menu-link" href="#/portal/">
+                    <span class="nav-secondary__menu-title">Sign up</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+        </div>
+
+            <div class="site-footer__socials">
+                <div class="socials">
+        <a href="https://www.youtube.com/@MotiaDev" aria-label="Follow on youtube" target="_blank" rel="noopener noreferrer" class="socials__link" data-social="youtube"><svg width="24" height="24" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M21.8,8.001c0,0-0.195-1.378-0.795-1.985c-0.76-0.797-1.613-0.801-2.004-0.847c-2.799-0.202-6.997-0.202-6.997-0.202 h-0.009c0,0-4.198,0-6.997,0.202C4.608,5.216,3.756,5.22,2.995,6.016C2.395,6.623,2.2,8.001,2.2,8.001S2,9.62,2,11.238v1.517 c0,1.618,0.2,3.237,0.2,3.237s0.195,1.378,0.795,1.985c0.761,0.797,1.76,0.771,2.205,0.855c1.6,0.153,6.8,0.201,6.8,0.201 s4.203-0.006,7.001-0.209c0.391-0.047,1.243-0.051,2.004-0.847c0.6-0.607,0.795-1.985,0.795-1.985s0.2-1.618,0.2-3.237v-1.517 C22,9.62,21.8,8.001,21.8,8.001z M9.935,14.594l-0.001-5.62l5.404,2.82L9.935,14.594z" fill="currentColor"></path></svg>
+</a>
+        <a href="https://www.linkedin.com/company/motiadev/" aria-label="Follow on linkedin" target="_blank" rel="noopener noreferrer" class="socials__link" data-social="linkedin"><svg width="24" height="24" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M19.7,3H4.3C3.582,3,3,3.582,3,4.3v15.4C3,20.418,3.582,21,4.3,21h15.4c0.718,0,1.3-0.582,1.3-1.3V4.3 C21,3.582,20.418,3,19.7,3z M8.339,18.338H5.667v-8.59h2.672V18.338z M7.004,8.574c-0.857,0-1.549-0.694-1.549-1.548 c0-0.855,0.691-1.548,1.549-1.548c0.854,0,1.547,0.694,1.547,1.548C8.551,7.881,7.858,8.574,7.004,8.574z M18.339,18.338h-2.669 v-4.177c0-0.996-0.017-2.278-1.387-2.278c-1.389,0-1.601,1.086-1.601,2.206v4.249h-2.667v-8.59h2.559v1.174h0.037 c0.356-0.675,1.227-1.387,2.526-1.387c2.703,0,3.203,1.779,3.203,4.092V18.338z" fill="currentColor"></path></svg>
+</a>
+</div>
+
+            </div>
+
+        <p class="site-footer__copyright">
+            © Motia 2025
+        </p>
+    </div>
+
+</footer>
+
+    </div><!-- .site -->
+
+    <script defer src="https://blog.motia.dev/assets/dist/main.js?v=d1750ad2dd"></script>
+
+    
+
+</body>
+
+</html>

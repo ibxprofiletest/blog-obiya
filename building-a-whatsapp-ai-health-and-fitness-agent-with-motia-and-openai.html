@@ -1,0 +1,1091 @@
+<!doctype html>
+<html lang="en" class="no-js" data-has-dark-mode-support>
+
+<head>
+    <title>Building a WhatsApp AI Health and Fitness Agent with Motia and OpenAI</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>document.documentElement.classList.replace('no-js','js');</script>
+    <script>
+        if (window.localStorage.getItem('asona-prefers-color-scheme') && !document.documentElement.hasAttribute('data-prefers-color-scheme')) {
+            document.documentElement.setAttribute('data-prefers-color-scheme', window.localStorage.getItem('asona-prefers-color-scheme'));
+        }
+    </script>
+
+    <link rel="preload" as="font" type="font/woff2" href="https://blog.motia.dev/assets/fonts/jost-v14-latin_latin-ext-regular.woff2?v=1cf9617688" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="https://blog.motia.dev/assets/fonts/jost-v14-latin_latin-ext-500.woff2?v=1cf9617688" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="https://blog.motia.dev/assets/fonts/encode-sans-semi-condensed-v10-latin_latin-ext-600.woff2?v=1cf9617688" crossorigin>
+
+<style>
+    @font-face {
+        font-family: 'Jost';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: url('https://blog.motia.dev/assets/fonts/jost-v14-latin_latin-ext-regular.woff2?v=1cf9617688') format('woff2');
+    }
+
+    @font-face {
+        font-family: 'Jost';
+        font-style: italic;
+        font-weight: 400;
+        font-display: swap;
+        src: url('https://blog.motia.dev/assets/fonts/jost-v14-latin_latin-ext-italic.woff2?v=1cf9617688') format('woff2');
+    }
+
+    @font-face {
+        font-family: 'Jost';
+        font-style: normal;
+        font-weight: 500;
+        font-display: swap;
+        src: url('https://blog.motia.dev/assets/fonts/jost-v14-latin_latin-ext-500.woff2?v=1cf9617688') format('woff2');
+    }
+
+    @font-face {
+        font-family: 'Jost';
+        font-style: normal;
+        font-weight: 600;
+        font-display: swap;
+        src: url('https://blog.motia.dev/assets/fonts/jost-v14-latin_latin-ext-600.woff2?v=1cf9617688') format('woff2');
+    }
+
+    @font-face {
+        font-family: 'Jost';
+        font-style: italic;
+        font-weight: 600;
+        font-display: swap;
+        src: url('https://blog.motia.dev/assets/fonts/jost-v14-latin_latin-ext-600italic.woff2?v=1cf9617688') format('woff2');
+    }
+
+    @font-face {
+        font-family: 'Encode Sans Semi Condensed';
+        font-style: normal;
+        font-weight: 600;
+        font-display: swap;
+        src: url('https://blog.motia.dev/assets/fonts/encode-sans-semi-condensed-v10-latin_latin-ext-600.woff2?v=1cf9617688') format('woff2');
+    }
+
+    @font-face {
+        font-family: 'Encode Sans Semi Condensed';
+        font-style: normal;
+        font-weight: 700;
+        font-display: swap;
+        src: url('https://blog.motia.dev/assets/fonts/encode-sans-semi-condensed-v10-latin-700.woff2?v=1cf9617688') format('woff2');
+    }
+
+    :root {
+        --asona--font-family--base: 'Jost', Helvetica, sans-serif;
+        --asona--font-family--headings: 'Encode Sans Semi Condensed', Helvetica, sans-serif;
+        --asona--font-family--elements: 'Jost', Helvetica, sans-serif;
+        --asona--font-weight--base: 400;
+        --asona--font-weight--base-bold: 600;
+        --asona--font-weight--headings: 600;
+        --asona--font-weight--headings-small: 700;
+        --asona--font-weight--elements: 500;
+    }
+</style>
+
+    <link rel="stylesheet" href="https://blog.motia.dev/assets/dist/style.css?v=1cf9617688">
+
+            <link rel="preload" as="image"
+            imagesrcset="/content/images/size/w364/format/webp/2025/08/Blog-Thumbanail@4x-1.png 364w,/content/images/size/w562/format/webp/2025/08/Blog-Thumbanail@4x-1.png 562w,/content/images/size/w760/format/webp/2025/08/Blog-Thumbanail@4x-1.png 760w,/content/images/size/w958/format/webp/2025/08/Blog-Thumbanail@4x-1.png 958w,/content/images/size/w1160/format/webp/2025/08/Blog-Thumbanail@4x-1.png 1160w,/content/images/size/w1520/format/webp/2025/08/Blog-Thumbanail@4x-1.png 1520w,/content/images/size/w1916/format/webp/2025/08/Blog-Thumbanail@4x-1.png 1916w"
+            imagesizes="(min-width: 1050px) 958px, (min-width: 820px) calc(100vw - 70px), 100vw"
+>
+
+
+    <meta name="description" content="Most health apps get downloaded, ignored, and eventually deleted. Sound familiar? But what if your health coach lived in the one app you actually use every day, WhatsApp? This guide walks you through building an AI-powered health &amp; fitness agent that works entirely via WhatsApp chat.">
+    <link rel="icon" href="https://blog.motia.dev/content/images/size/w256h256/2025/07/AVATAR_0002_1.png" type="image/png">
+    <link rel="canonical" href="https://blog.motia.dev/building-a-whatsapp-ai-health-and-fitness-agent-with-motia-and-openai/">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    
+    <meta property="og:site_name" content="Motia">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Building a WhatsApp AI Health and Fitness Agent with Motia and OpenAI">
+    <meta property="og:description" content="Most health apps get downloaded, ignored, and eventually deleted. Sound familiar? But what if your health coach lived in the one app you actually use every day, WhatsApp? This guide walks you through building an AI-powered health &amp; fitness agent that works entirely via WhatsApp chat.">
+    <meta property="og:url" content="https://blog.motia.dev/building-a-whatsapp-ai-health-and-fitness-agent-with-motia-and-openai/">
+    <meta property="og:image" content="https://blog.motia.dev/content/images/size/w1200/2025/08/Blog-Thumbanail@4x-1.png">
+    <meta property="article:published_time" content="2025-08-04T09:04:54.000Z">
+    <meta property="article:modified_time" content="2025-08-04T09:34:46.000Z">
+    <meta property="article:tag" content="developer">
+    <meta property="article:tag" content="whatsapp">
+    <meta property="article:tag" content="api">
+    <meta property="article:tag" content="workflow">
+    <meta property="article:tag" content="templates">
+    <meta property="article:tag" content="backend">
+    <meta property="article:tag" content="motia">
+    
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Building a WhatsApp AI Health and Fitness Agent with Motia and OpenAI">
+    <meta name="twitter:description" content="Most health apps get downloaded, ignored, and eventually deleted. Sound familiar? But what if your health coach lived in the one app you actually use every day, WhatsApp? This guide walks you through building an AI-powered health &amp; fitness agent that works entirely via WhatsApp chat.">
+    <meta name="twitter:url" content="https://blog.motia.dev/building-a-whatsapp-ai-health-and-fitness-agent-with-motia-and-openai/">
+    <meta name="twitter:image" content="https://blog.motia.dev/content/images/size/w1200/2025/08/Blog-Thumbanail@4x-1.png">
+    <meta name="twitter:label1" content="Written by">
+    <meta name="twitter:data1" content="Motia Team">
+    <meta name="twitter:label2" content="Filed under">
+    <meta name="twitter:data2" content="developer, whatsapp, api, workflow, templates, backend, motia">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="720">
+    
+    <script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "publisher": {
+        "@type": "Organization",
+        "name": "Motia",
+        "url": "https://blog.motia.dev/",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://blog.motia.dev/content/images/2025/07/FLAT-BLUE-LOGO_MOTIA-1.png"
+        }
+    },
+    "author": {
+        "@type": "Person",
+        "name": "Motia Team",
+        "image": {
+            "@type": "ImageObject",
+            "url": "https://blog.motia.dev/content/images/2025/07/AVATAR_0001_2.png",
+            "width": 1080,
+            "height": 1080
+        },
+        "url": "https://blog.motia.dev/author/rohit-ghumare/",
+        "sameAs": []
+    },
+    "headline": "Building a WhatsApp AI Health and Fitness Agent with Motia and OpenAI",
+    "url": "https://blog.motia.dev/building-a-whatsapp-ai-health-and-fitness-agent-with-motia-and-openai/",
+    "datePublished": "2025-08-04T09:04:54.000Z",
+    "dateModified": "2025-08-04T09:34:46.000Z",
+    "image": {
+        "@type": "ImageObject",
+        "url": "https://blog.motia.dev/content/images/size/w1200/2025/08/Blog-Thumbanail@4x-1.png",
+        "width": 1200,
+        "height": 720
+    },
+    "keywords": "developer, whatsapp, api, workflow, templates, backend, motia",
+    "description": "Most health apps get downloaded, ignored, and eventually deleted. Sound familiar? But what if your health coach lived in the one app you actually use every day, WhatsApp? This guide walks you through building an AI-powered health &amp; fitness agent that works entirely via WhatsApp chat.",
+    "mainEntityOfPage": "https://blog.motia.dev/building-a-whatsapp-ai-health-and-fitness-agent-with-motia-and-openai/"
+}
+    </script>
+
+    <meta name="generator" content="Ghost 6.0">
+    <link rel="alternate" type="application/rss+xml" title="Motia" href="https://blog.motia.dev/rss/">
+    <script defer src="https://cdn.jsdelivr.net/ghost/portal@~2.52/umd/portal.min.js" data-i18n="true" data-ghost="https://blog.motia.dev/" data-key="60a5c5eb6662c8dc6942620537" data-api="https://motia.ghost.io/ghost/api/content/" data-locale="en" data-members-signin-otc="false" crossorigin="anonymous"></script><style id="gh-members-styles">.gh-post-upgrade-cta-content,
+.gh-post-upgrade-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    text-align: center;
+    width: 100%;
+    color: #ffffff;
+    font-size: 16px;
+}
+
+.gh-post-upgrade-cta-content {
+    border-radius: 8px;
+    padding: 40px 4vw;
+}
+
+.gh-post-upgrade-cta h2 {
+    color: #ffffff;
+    font-size: 28px;
+    letter-spacing: -0.2px;
+    margin: 0;
+    padding: 0;
+}
+
+.gh-post-upgrade-cta p {
+    margin: 20px 0 0;
+    padding: 0;
+}
+
+.gh-post-upgrade-cta small {
+    font-size: 16px;
+    letter-spacing: -0.2px;
+}
+
+.gh-post-upgrade-cta a {
+    color: #ffffff;
+    cursor: pointer;
+    font-weight: 500;
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+.gh-post-upgrade-cta a:hover {
+    color: #ffffff;
+    opacity: 0.8;
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+.gh-post-upgrade-cta a.gh-btn {
+    display: block;
+    background: #ffffff;
+    text-decoration: none;
+    margin: 28px 0 0;
+    padding: 8px 18px;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.gh-post-upgrade-cta a.gh-btn:hover {
+    opacity: 0.92;
+}</style>
+    <script defer src="https://cdn.jsdelivr.net/ghost/sodo-search@~1.8/umd/sodo-search.min.js" data-key="60a5c5eb6662c8dc6942620537" data-styles="https://cdn.jsdelivr.net/ghost/sodo-search@~1.8/umd/main.css" data-sodo-search="https://motia.ghost.io/" data-locale="en" crossorigin="anonymous"></script>
+    
+    <link href="https://blog.motia.dev/webmentions/receive/" rel="webmention">
+    <script defer src="/public/cards.min.js?v=1cf9617688"></script>
+    <link rel="stylesheet" type="text/css" href="/public/cards.min.css?v=1cf9617688">
+    <script defer src="/public/comment-counts.min.js?v=1cf9617688" data-ghost-comments-counts-api="https://blog.motia.dev/members/api/comments/counts/"></script>
+    <script defer src="/public/member-attribution.min.js?v=1cf9617688"></script><style>:root {--ghost-accent-color: #2f7eff;}</style>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs/prism.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/autoloader/prism-autoloader.min.js" defer></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs/themes/prism-tomorrow.min.css">
+
+    <script defer src="/public/ghost-stats.min.js?v=1cf9617688" data-stringify-payload="false" data-datasource="analytics_events" data-storage="localStorage" data-host="https://blog.motia.dev/.ghost/analytics/api/v1/page_hit"  tb_site_uuid="20963f3a-c117-4cee-853d-d4e582ecb52b" tb_post_uuid="08200de4-7855-448d-abc3-df72d6f9290b" tb_post_type="post" tb_member_uuid="undefined" tb_member_status="undefined"></script>
+    <link rel="preconnect" href="https://fonts.bunny.net"><link rel="stylesheet" href="https://fonts.bunny.net/css?family=fira-sans:400,500,600"><style>:root {--gh-font-heading: Fira Sans;}</style>
+</head>
+
+<body class="post-template tag-developer tag-whatsapp tag-api tag-workflow tag-templates tag-backend tag-motia gh-font-heading-fira-sans">
+
+    <a class="skip-link visually-hidden-focusable" href="#main">Skip to content</a>
+
+    <div class="site">
+
+        <header id="site-header" class="site-header">
+    <div class="site-header__container">
+        <button
+            class="site-header__hamburger"
+            data-site-action-trigger="navigation"
+            aria-label="Open Menu"
+            aria-expanded="false"
+            aria-controls="site-navigation">
+            <span></span>
+        </button>
+
+        <a href="https://blog.motia.dev" rel="home" class="site-header__logo" data-has-dark-mode-logo>
+                <img class="site-header__logo-image" data-logo-color-scheme="default" src="https://blog.motia.dev/content/images/2025/07/FLAT-BLUE-LOGO_MOTIA-1.png" alt="Motia">
+                    <img class="site-header__logo-image" data-logo-color-scheme="dark" src="https://blog.motia.dev/content/images/2025/07/BLUE-GRADIENT-LOGO_MOTIA.png" alt="Motia">
+        </a>
+
+        <div id="site-navigation" class="site-navigation">
+            <div class="site-navigation__inner">
+                    <nav class="nav-primary">
+        <ul class="nav-primary__menu">
+             
+                <li class="nav-primary__menu-item">
+                    <a class="nav-primary__menu-link" href="https://motia.dev">
+                        <span class="nav-primary__menu-title">Home</span>
+                    </a>
+                </li>
+             
+             
+                <li class="nav-primary__menu-item">
+                    <a class="nav-primary__menu-link" href="https://motia.dev/manifesto/">
+                        <span class="nav-primary__menu-title">Manifesto</span>
+                    </a>
+                </li>
+             
+             
+                <li class="nav-primary__menu-item">
+                    <a class="nav-primary__menu-link" href="https://github.com/motiadev/motia">
+                        <span class="nav-primary__menu-title">Star our Repo</span>
+                    </a>
+                </li>
+             
+        </ul>
+    </nav>
+
+
+                    <div class="site-account">
+                                <a class="site-account__link" href="#/portal/signin" data-portal="signin">Sign in</a>
+                                <a class="site-account__button button" data-btn-size="small" href="#/portal/signup" data-portal="signup">Subscribe</a>
+                    </div>
+
+                    <div class="site-color-scheme">
+                        <div class="site-color-scheme__current">
+                            <span class="site-color-scheme__icon" data-show-color-scheme="light">
+<svg version="1.1" aria-hidden="true" focusable="false" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+  <path d="M12 8a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+</svg>
+</span>
+                            <span class="site-color-scheme__icon" data-show-color-scheme="dark"><svg version="1.1" aria-hidden="true" focusable="false" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" fill="currentColor"><path d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"/></svg>
+</span>
+                            <span class="site-color-scheme__icon" data-show-color-scheme="system"><svg version="1.1" aria-hidden="true" focusable="false" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor"><path d="M448 256c0-106-86-192-192-192V448c106 0 192-86 192-192zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256z"/></svg>
+</span>
+                        </div>
+                        <div class="site-color-scheme__options">
+                            <button class="site-color-scheme__item" data-toggle-color-scheme="light">
+                                <span class="site-color-scheme__icon">
+<svg version="1.1" aria-hidden="true" focusable="false" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+  <path d="M12 8a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+</svg>
+</span>
+                                <span class="site-color-scheme__label">Light</span>
+                            </button>
+                            <button class="site-color-scheme__item" data-toggle-color-scheme="dark">
+                                <span class="site-color-scheme__icon"><svg version="1.1" aria-hidden="true" focusable="false" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" fill="currentColor"><path d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"/></svg>
+</span>
+                                <span class="site-color-scheme__label">Dark</span>
+                            </button>
+                            <button class="site-color-scheme__item" data-toggle-color-scheme="system">
+                                <span class="site-color-scheme__icon"><svg version="1.1" aria-hidden="true" focusable="false" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor"><path d="M448 256c0-106-86-192-192-192V448c106 0 192-86 192-192zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256z"/></svg>
+</span>
+                                <span class="site-color-scheme__label">System</span>
+                            </button>
+                        </div>
+                    </div>
+            </div>
+        </div>
+
+        <button
+            class="site-header__search-trigger"
+            aria-label="Open Search"
+            data-ghost-search>
+            <span></span>
+        </button>
+    </div>
+
+    <div class="site-actions">
+        <span class="site-actions__backdrop" data-close-site-actions></span>
+        <span class="site-actions__bg"></span>
+    </div>
+
+</header>
+
+        <main id="main" class="site-main">
+            
+
+<article class="article post tag-developer tag-whatsapp tag-api tag-workflow tag-templates tag-backend tag-motia">
+
+    <header class="article-header section" data-canvas-grid="content" data-post-type="post" data-section="first" data-style="classic" data-has-featured-image="true">
+    <div class="article-header__content">
+            <a href="/tag/developer/" class="article-header__primary-tag" rel="tag">developer</a>
+        <h1 class="article-header__title">
+            <span class="article-header__title-inner">Building a WhatsApp AI Health and Fitness Agent with Motia and OpenAI</span>
+        </h1>
+            <p class="article-header__excerpt">Most health apps get downloaded, ignored, and eventually deleted. Sound familiar? But what if your health coach lived in the one app you actually use every day, WhatsApp? This guide walks you through building an AI-powered health &amp; fitness agent that works entirely via WhatsApp chat.</p>
+        <div class="article-header__footer">
+            <span class="article-header__meta article-header__meta--author">
+                <span class="article-header__meta-info">By</span>
+                <a href="https://blog.motia.dev/author/rohit-ghumare/" class="article-header__meta-link">Motia Team</a>
+            </span>
+            <time class="article-header__meta article-header__meta--date" datetime="2025-08-04">Aug 4, 2025</time>
+            <span class="article-header__meta article-header__meta--read-time">16 min read</span>
+        </div>
+    </div>
+    <figure class="article-header__figure">
+        <img class="article-header__image"
+            width="5" height="3"
+            src="/content/images/size/w760/format/webp/2025/08/Blog-Thumbanail@4x-1.png"
+            srcset="/content/images/size/w364/format/webp/2025/08/Blog-Thumbanail@4x-1.png 364w,/content/images/size/w562/format/webp/2025/08/Blog-Thumbanail@4x-1.png 562w,/content/images/size/w760/format/webp/2025/08/Blog-Thumbanail@4x-1.png 760w,/content/images/size/w958/format/webp/2025/08/Blog-Thumbanail@4x-1.png 958w,/content/images/size/w1160/format/webp/2025/08/Blog-Thumbanail@4x-1.png 1160w,/content/images/size/w1520/format/webp/2025/08/Blog-Thumbanail@4x-1.png 1520w,/content/images/size/w1916/format/webp/2025/08/Blog-Thumbanail@4x-1.png 1916w"
+            sizes="(min-width: 1050px) 958px, (min-width: 820px) calc(100vw - 70px), 100vw"
+            loading="eager"
+            alt="Building a WhatsApp AI Health and Fitness Agent with Motia and OpenAI"
+            onload="this.setAttribute('data-loaded', true)">
+    </figure>
+</header>
+
+    <div class="article-main section" data-canvas-grid="content">
+        <div class="article-content" data-canvas-grid="content" data-canvas-grid-self="full">
+            <h2 id="introduction">Introduction</h2><p>Most health apps sit unused on people's phones. You download them with good intentions, log a few workouts, then forget they exist. But there's one app everyone uses daily - WhatsApp.</p><p>What if your health coach lived right inside your messages? No new app to download, no complex interfaces to learn. Just text "I ran 5km today" and get back personalized advice, meal plans, and habit insights.</p><p>This AI health and fitness agent runs entirely through WhatsApp using Motia's event-driven framework. The agent understands when you send regular text messages like "I ran 5km today" or "suggest a meal plan" and responds intelligently.</p><p>Here's what happens when you text the agent: it figures out what you want (logging activity, getting a plan, or analyzing habits), processes your request using AI, and responds back with helpful information. All of this works through simple text messages.</p><p>The core technologies we used are <code>Motia</code> for connecting all the fragmented pieces together, <code>OpenAI</code> for understanding and generating responses, <code>WhatsApp Cloud API</code> for messaging, and <code>SQLite</code> for storing health data.</p><p>In this tutorial, you'll learn how to build chat-based health apps that work through messaging platforms. You'll see how event-driven architecture makes it easy to handle different types of health-related conversations, how to extract structured data from casual text messages, and how to create AI agents that feel natural to talk with about your fitness goals.</p><h2 id="why-this-architecture">Why this Architecture</h2><p>Motia's event-driven architecture was used because health conversations have many moving parts. When someone texts "I had pizza for lunch and ran 3 miles," the system needs to understand what they said, pull out the important data, save it to a database, and send back a confirmation. That is at least four different jobs.</p><p>With traditional setups, you'd write a long bloated function that tries to do everything. This gets messy fast. If you want to change how meal logging works, you might accidentally break the workout tracking part.</p><p>Motia's event-driven approach splits each job into its own "step." One step handles incoming messages. Another step figures out what the user wants. A third step extracts the health data. Each step does one thing well and passes the work along through events. This approach lets different AI agents specialize in specific functions.</p><p>The intent classifier only focuses on understanding what users want - it doesn't know about database storage or WhatsApp messaging. The meal planner focuses on creating good nutrition advice and doesn't handle message parsing. When each piece has a single job, it's easier to build, test, and fix. If you want to add a new feature like sleep tracking, you just add new steps for that specific task.</p><h2 id="project-overview">Project Overview</h2><figure class="kg-card kg-image-card"><img src="https://blog.motia.dev/content/images/2025/08/image.png" class="kg-image" alt="" loading="lazy" width="2000" height="1003" srcset="https://blog.motia.dev/content/images/size/w600/2025/08/image.png 600w, https://blog.motia.dev/content/images/size/w1000/2025/08/image.png 1000w, https://blog.motia.dev/content/images/size/w1600/2025/08/image.png 1600w, https://blog.motia.dev/content/images/2025/08/image.png 2048w" sizes="(min-width: 720px) 720px"></figure><p>If you directly want to dive into code, here's the repo:</p><figure class="kg-card kg-bookmark-card"><a class="kg-bookmark-container" href="https://github.com/MotiaDev/motia-examples/tree/main/examples/ai-health-fitness?ref=blog.motia.dev"><div class="kg-bookmark-content"><div class="kg-bookmark-title">motia-examples/examples/ai-health-fitness at main · MotiaDev/motia-examples</div><div class="kg-bookmark-description">A community maintained list of flow examples built with Motia - MotiaDev/motia-examples</div><div class="kg-bookmark-metadata"><img class="kg-bookmark-icon" src="https://blog.motia.dev/content/images/icon/pinned-octocat-093da3e6fa40-2.svg" alt=""><span class="kg-bookmark-author">GitHub</span><span class="kg-bookmark-publisher">MotiaDev</span></div></div><div class="kg-bookmark-thumbnail"><img src="https://blog.motia.dev/content/images/thumbnail/motia-examples-1" alt="" onerror="this.style.display = 'none'"></div></a></figure><p>Here's how the system works when someone sends a WhatsApp message:</p><p><strong>1. Message comes in</strong> → WhatsApp webhook receives it and triggers the first event</p><p><strong>2. Intent classification</strong> → AI figures out what the user wants (meal plan, log activity, analyze habits, or just chat)</p><p><strong>3. Specialized processing</strong> → Based on the intent, one of these happens:</p><ul><li>Extract health data from text and save to the database</li><li>Generate meal/workout plans using GPT-4</li><li>Analyze stored health data for insights</li><li>Have a general health conversation</li></ul><p><strong>4. Response delivery</strong> → Send the AI response back through WhatsApp</p><p><strong>5. Confirmation</strong> → User gets feedback that their request was handled</p><p>The five main AI-powered steps are:</p><ul><li><strong>Intent classifier</strong>: Understands "I ran 5km" vs "suggest a workout"</li><li><strong>Data extractor</strong>: Pulls structured info from "I had eggs and ran 3 miles"</li><li><strong>Planner</strong>: Creates meal plans and workout routines</li><li><strong>Analyzer</strong>: Reviews your logged data for patterns and suggestions</li><li><strong>Chat responder</strong>: Handles general health questions</li></ul><p>Each step only runs when needed. If you ask for a meal plan, the data extractor and analyzer steps don't run. If you log activities, the planner step stays off. This keeps the system fast and focused.</p><p>The webhook → classifier → specialized step → response flow means adding new features is just a matter of adding new steps to the chain.</p><h2 id="prerequisites">Prerequisites</h2><p>Before building this AI health agent, you need these accounts and tools set up:</p><h3 id="required-api-keys-and-accounts"><strong>Required API Keys and Accounts</strong></h3><p><strong>OpenAI Account</strong></p><ul><li>Sign up at <a href="https://platform.openai.com/?ref=blog.motia.dev">https://platform.openai.com/</a></li><li>Generate an API key from the <a href="https://platform.openai.com/account/api-keys?ref=blog.motia.dev">API keys page</a></li><li>You'll need this for GPT-4o to power intent classification and responses</li></ul><p><strong>Meta Developer Account (WhatsApp Cloud API)</strong></p><ul><li>Go to <a href="https://developers.facebook.com/?ref=blog.motia.dev">https://developers.facebook.com</a></li><li>Create a new app and choose "Business" type</li><li>Navigate to WhatsApp &gt; Getting Started</li><li>Copy these values:<ul><li>Phone Number ID</li><li>Access Token</li><li>App ID and App Secret</li></ul></li></ul><h3 id="development-tools">Development Tools</h3><p><strong>Node.js (v16+)</strong></p><p><strong>ngrok (for webhook testing)</strong></p><pre><code class="language-bash"># Install ngrok globally
+npm install -g ngrok
+
+# Or download from ngrok.com
+</code></pre><h3 id="create-new-motia-project">Create New Motia Project</h3><p><strong>Initialize the project:</strong></p><pre><code class="language-bash"># Create new Motia project
+npx motia@latest create -n ai-health-agent
+
+# Navigate to project
+cd ai-health-agent
+</code></pre><p>This creates a basic Motia project structure with:</p><ul><li><code>steps/</code> folder for your workflow steps</li><li><code>package.json</code> with Motia dependencies</li><li>Example steps to get you started</li></ul><h3 id="environment-configuration">Environment Configuration</h3><p>Create a <code>.env</code> file in your project root:</p><pre><code class="language-bash"># OpenAI
+OPENAI_API_KEY=sk-...
+
+# WhatsApp Cloud API
+WHATSAPP_TOKEN=EAANZ...
+PHONE_NUMBER_ID=1234567890
+META_APP_ID=1234567890
+META_APP_SECRET=abcd1234...
+RECEIVER_PHONE=+1234567890
+VERIFY_TOKEN=12345
+</code></pre><h3 id="quick-setup-check">Quick Setup Check</h3><p>Run this to verify everything works:</p><pre><code class="language-bash"># Install dependencies
+npm install
+
+# Start Motia development server
+npm run dev
+
+# In another terminal, test ngrok
+ngrok http 3000
+</code></pre><p>If Motia Workbench opens at <code>http://localhost:3000</code> And ngrok shows a public URL, then you're ready to build.</p><h2 id="the-first-step">The First Step</h2><p>When someone sends a WhatsApp message to your health agent, it has to get into your Motia system somehow. That's where the webhook comes in. It is the entry point that receives messages from WhatsApp and starts everything else.</p><h3 id="setting-up-the-whatsapp-webhook-handler">Setting up the WhatsApp Webhook Handler</h3><p>First, create the webhook step that will receive all incoming WhatsApp messages:</p><p><strong>Create <code>steps/whatsapp-webhook.step.ts</code>:</strong></p><pre><code class="language-tsx">import { ApiRouteConfig, Handlers } from 'motia'
+import { z } from 'zod'
+
+export const config: ApiRouteConfig = {
+  type: 'api',
+  name: 'whatsapp-inbound-handler',
+  description: 'Handles incoming WhatsApp messages via webhook',
+  path: '/webhook',
+  method: 'POST',
+  emits: ['message-received'],
+  bodySchema: z.object({
+    entry: z.array(
+      z.object({
+        changes: z.array(
+          z.object({
+            value: z.object({
+              messages: z
+                .array(
+                  z.object({
+                    from: z.string(),
+                    text: z.object({ body: z.string() })
+                  })
+                )
+                .optional()
+            })
+          })
+        )
+      })
+    )
+  }),
+  flows: ['health-companion']
+}
+</code></pre><p>This creates a POST endpoint at <code>/webhook</code> that WhatsApp will send messages to. The <code>bodySchema</code> uses Zod to validate that incoming data matches WhatsApp's webhook format.</p><h3 id="parsing-the-webhook-payload-from-meta">Parsing the Webhook Payload from Meta</h3><p>WhatsApp sends a complex nested JSON structure. Here's how we extract the actual messages:</p><pre><code class="language-tsx">export const handler: Handlers['whatsapp-inbound-handler'] = async (req, { emit, logger }) =&gt; {
+  const body = req.body
+  let messages: { from: string, text: { body: string } }[] = [];
+  
+  try {
+    messages =
+      body.entry
+        ?.flatMap((entry: any) =&gt;
+          entry.changes?.flatMap((change: any) =&gt;
+            change.value.messages ?? []
+          ) ?? []
+        ) ?? [];
+  } catch (e) {
+    logger.error('Failed to extract WhatsApp messages from webhook body', { body, error: e });
+  }
+
+  if (!messages.length) {
+    logger.info('No WhatsApp messages in incoming webhook payload (non-user event)', { body });
+    return {
+      status: 200,
+      body: { message: 'No user message to process' }
+    }
+  }
+</code></pre><p>WhatsApp webhook payloads can contain multiple messages and various event types (like read receipts). This code safely extracts only the actual user messages we need.</p><h3 id="emitting-events-to-trigger-the-rest-of-the-workflow">Emitting Events to Trigger the Rest of the Workflow</h3><p>Once we have clean message data, we emit an event for each message:</p><pre><code class="language-tsx">// Emit one event per message received
+  for (const msg of messages) {
+    const user = msg.from;
+    const message = msg.text?.body;
+
+    if (!user || !message) {
+      logger.error('Malformed WhatsApp message - missing user or text body', { msg });
+      continue;
+    }
+
+    logger.info('Emitting WhatsApp message-received event', { user, message });
+    await emit({
+      topic: 'message-received',
+      data: { user, message } 
+    });
+  }
+
+  return {
+    status: 200,
+    body: { message: 'Webhook processed successfully' }
+  }
+</code></pre><p>The <code>emit()</code> function sends a <code>message-received</code> event with clean data: just the user's phone number and their message text. Other steps in our workflow will listen for this event.</p><h2 id="second-stepunderstanding-user-intent">Second Step - Understanding User Intent</h2><p>When your health agent receives a message like "I ran 5km today" or "suggest a healthy breakfast," it needs to figure out what the user actually wants. That's where intent classification comes in. It's the brain that decides which part of your system should handle each message.</p><p>The intent classifier is an event step that listens for incoming messages and uses OpenAI to understand what users want:</p><p><strong>Create <code>steps/classify-user-intent.step.ts</code>:</strong></p><pre><code class="language-tsx">import { EventConfig, Handlers } from 'motia';
+import OpenAI from 'openai';
+import { z } from 'zod';
+import Mustache from 'mustache';
+import fs from 'fs/promises';
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+
+const INTENTS = ['plan_meal', 'plan_workout', 'log_activity', 'analyze_habits'];
+
+export const config: EventConfig = {
+  type: 'event',
+  name: 'classify-user-intent',
+  description: 'Classify incoming WhatsApp message',
+  subscribes: ['message-received'],
+  emits: ['planner-request', 'user-activity-extract', 'analyze-user-habits', 'health-chat-message'],
+  input: z.object({
+    user: z.string(),
+    message: z.string()
+  }),
+  flows: ['health-companion']
+};
+</code></pre><p>This step subscribes to <code>message-received</code> events from the webhook and can emit four different types of events based on what it thinks the user wants.</p><h3 id="using-openai-to-determine-user-intent">Using OpenAI to Determine User Intent</h3><p>We use a simple prompt template to get consistent classifications from GPT-4o:</p><p><strong>Create <code>prompts/classify-intent.mustache</code>:</strong></p><pre><code class="language-tsx">Classify this WhatsApp message into one of these intents:
+{{#intents}}
+- {{.}}
+{{/intents}}
+Message: "{{message}}"
+Only respond with the intent (just one word).
+</code></pre><p>The handler loads this template and asks OpenAI to classify each message:</p><pre><code class="language-tsx">export const handler: Handlers['classify-user-intent'] = async (input, { emit, logger }) =&gt; {
+  const { user, message } = input;
+
+  // Load the prompt template
+  let template: string;
+  try {
+    template = await fs.readFile('prompts/classify-intent.mustache', 'utf-8');
+  } catch (err) {
+    logger.error('Failed to load prompt template file', { error: err });
+    // Fallback to general chat if template fails
+    await emit({
+      topic: 'health-chat-message',
+      data: {
+        message: "Sorry, I'm having trouble classifying your message right now.",
+        conversationId: undefined,
+        assistantMessageId: crypto.randomUUID()
+      }
+    });
+    return;
+  }
+
+  const prompt = Mustache.render(template, { intents: INTENTS, message });
+</code></pre><h3 id="getting-ai-classification-results">Getting AI Classification Results</h3><p>We call OpenAI with a simple system prompt and the rendered template:</p><pre><code class="language-tsx">let response;
+  try {
+    response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: 'You classify user intents for a health assistant.' },
+        { role: 'user', content: prompt }
+      ]
+    });
+  } catch (err) {
+    logger.error('Error calling OpenAI completion API', { error: err });
+    // Fallback to general chat on API errors
+    await emit({
+      topic: 'health-chat-message',
+      data: {
+        message: "Sorry, I couldn't understand your message due to a system error.",
+        conversationId: undefined,
+        assistantMessageId: crypto.randomUUID()
+      }
+    });
+    return;
+  }
+
+  const content = response.choices?.[0]?.message?.content;
+  const intent = content.trim().toLowerCase();
+
+  logger.info(`AI classified intent: "${intent}" for user: ${user}`);
+</code></pre><h3 id="emitting-different-events-based-on-intent">Emitting Different Events Based on Intent</h3><p>Once we have the classified intent, we route it to the right part of the system:</p><pre><code class="language-tsx">// Validate intent, fallback if unexpected
+  if (!INTENTS.includes(intent)) {
+    logger.warn(`Unrecognized intent from AI: "${intent}", falling back to health-chat-message.`);
+    await emit({
+      topic: 'health-chat-message',
+      data: {
+        message,
+        conversationId: undefined,
+        assistantMessageId: crypto.randomUUID()
+      }
+    });
+    return;
+  }
+
+  switch (intent) {
+    case 'plan_meal':
+    case 'plan_workout':
+      await emit({
+        topic: 'planner-request',
+        data: { user, type: intent === 'plan_meal' ? 'meal' : 'workout', prompt: message }
+      });
+      break;
+    case 'log_activity':
+      await emit({ topic: 'user-activity-extract', data: { user, message } });
+      break;
+    case 'analyze_habits':
+      await emit({ topic: 'analyze-user-habits', data: { user } });
+      break;
+  }
+</code></pre><h2 id="third-step-extracting-health-data">Third Step: Extracting Health Data</h2><p>When someone texts:</p><p><strong>"I weighed 72kg today, had a spinach salad for lunch, and did a 20-minute jog",</strong> the system needs to pull out the structured data: weight=72kg, meal=spinach salad, workout=20-minute jog.</p><p>This is where data extraction comes in - turning normal text into database-ready information.</p><h3 id="converting-natural-language-to-structured-data">Converting Natural Language to Structured Data</h3><p>The data extractor listens for activity logging requests and uses OpenAI's structured output feature to get reliable JSON:</p><p><strong>Create <code>steps/user-activity-extract.step.ts</code>:</strong></p><pre><code class="language-tsx">import { EventConfig, Handlers } from 'motia';
+import OpenAI from 'openai';
+import { z } from 'zod';
+import zodToJsonSchema from 'zod-to-json-schema';
+import Mustache from 'mustache';
+import fs from 'fs/promises';
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+
+const Activity = z.object({
+  weight: z.string().optional(),
+  meal: z.string().optional(),
+  workout: z.string().optional(),
+});
+
+const ActivitiesPayload = z.object({
+  activities: z.array(Activity).nonempty(),
+});
+
+export const config: EventConfig = {
+  type: 'event',
+  name: 'user-activity-extract',
+  description: 'Extract structured activity from free-form message',
+  subscribes: ['user-activity-extract'],
+  emits: ['user-activity-log'],
+  input: z.object({ user: z.string(), message: z.string() }),
+  flows: ['health-companion'],
+};
+</code></pre><p>This step listens for <code>user-activity-extract</code> events (sent by the intent classifier) and emits <code>user-activity-log</code> events with clean data.</p><h3 id="using-openais-json-schema-feature">Using OpenAI's JSON Schema Feature</h3><p>We define what we want using Zod schemas, then convert them to JSON Schema for OpenAI:</p><p><strong>Create <code>prompts/user-activity-extract.mustache</code>:</strong></p><pre><code class="language-tsx">You are a health-data extractor.
+From the text below, extract structured health activity data as JSON that matches the given schema.
+
+Text:
+"""
+{{message}}
+"""
+</code></pre><p>The handler uses OpenAI's structured output to get reliable JSON:</p><pre><code class="language-tsx">export const handler: Handlers['user-activity-extract'] = async (
+  input,
+  { emit, logger }
+) =&gt; {
+  const { user, message } = input;
+
+  let template: string;
+  try {
+    template = await fs.readFile('prompts/user-activity-extract.mustache', 'utf-8');
+  } catch (err) {
+    logger.error('Failed to load prompt template file', { error: err });
+    return;
+  }
+
+  const prompt = Mustache.render(template, { message });
+
+  try {
+    const schema = zodToJsonSchema(ActivitiesPayload);
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0,
+      response_format: {
+        type: 'json_schema',
+        json_schema: {
+          name: 'activities_payload',
+          schema,
+        },
+      },
+    });
+</code></pre><h3 id="processing-the-structured-response">Processing the Structured Response</h3><p>Once OpenAI returns structured JSON, we validate it and emit events for each activity:</p><pre><code class="language-tsx">const raw = completion.choices[0].message.content!;
+    const parsed = ActivitiesPayload.parse(JSON.parse(raw));
+
+    for (const activity of parsed.activities) {
+      await emit({
+        topic: 'user-activity-log',
+        data: { user, ...activity },
+      });
+    }
+
+    logger.info(`Emitted ${parsed.activities.length} activity log(s)`);
+  } catch (err) {
+    logger.error('Activity extraction failed:', err);
+  }
+};
+</code></pre><h3 id="how-the-extraction-works-in-practice">How the Extraction Works in Practice</h3><p>Here are examples of how different messages get processed:</p><p><strong>Input</strong>: "I weighed 72kg today, had a spinach salad for lunch, and did a 20-minute jog."</p><p><strong>OpenAI Returns</strong>:</p><pre><code class="language-tsx">{
+  "activities": [
+    {
+      "weight": "72kg",
+      "meal": "spinach salad",
+      "workout": "20-minute jog"
+    }
+  ]
+}
+</code></pre><p><strong>Events Emitted</strong>: One <code>user-activity-log</code> event with all three data points</p><p><strong>Input</strong>: "I had eggs for breakfast and later ate pizza for dinner"</p><p><strong>OpenAI Returns</strong>:</p><pre><code class="language-tsx">{
+  "activities": [
+    {
+      "meal": "eggs for breakfast"
+    },
+    {
+      "meal": "pizza for dinner"
+    }
+  ]
+}
+</code></pre><p><strong>Events Emitted</strong>: Two separate <code>user-activity-log</code> events, one for each meal</p><h3 id="emitting-structured-data-events">Emitting Structured Data Events</h3><p>Each extracted activity becomes a separate event:</p><pre><code class="language-tsx">await emit({
+  topic: 'user-activity-log',
+  data: { user, ...activity },
+});
+</code></pre><p>The <code>user-activity-log</code> event contains:</p><ul><li><code>user</code>: Phone number of who sent the message</li><li><code>weight</code>: Weight measurement (if mentioned)</li><li><code>meal</code>: Food eaten (if mentioned)</li><li><code>workout</code>: Exercise done (if mentioned)</li></ul><p>Other steps in the system listen for these events to log data to the database and send confirmations back to the user.</p><h2 id="fourth-step-ai-powered-planning-and-analysis">Fourth Step: AI-Powered Planning and Analysis</h2><p>The health agent doesn't just log data; it also creates meal plans and workout routines, and analyzes your health patterns. This is where the AI really comes into play, using GPT-4o to generate personalized recommendations and insights based on user requests and stored data.</p><h3 id="building-the-meal-and-workout-planning-system">Building the Meal and Workout Planning System</h3><p>The planner step handles both meal and workout requests using a single handler:</p><p><strong>Create <code>steps/planner.step.ts</code>:</strong></p><pre><code class="language-tsx">import { EventConfig, Handlers } from 'motia'
+import { z } from 'zod'
+import OpenAI from 'openai'
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! })
+
+const schema = z.object({
+  user: z.string(),
+  type: z.enum(['meal', 'workout']),
+  prompt: z.string()
+})
+
+export const config: EventConfig = {
+  type: 'event',
+  name: 'planner',
+  description: 'Generate tailored meal or workout plans',
+  subscribes: ['planner-request'],
+  emits: ['send-whatsapp-message-request'],
+  input: schema,
+  flows: ['health-companion']
+}
+</code></pre><p>This step listens for <code>planner-request</code> events from the intent classifier and sends responses directly back to WhatsApp.</p><h3 id="generating-personalized-recommendations">Generating Personalized Recommendations</h3><p>The planner uses GPT-4o with a focused system prompt:</p><pre><code class="language-tsx">export const handler: Handlers['planner'] = async (input, { logger, emit }) =&gt; {
+  const { user, prompt, type } = input
+
+  logger.info(`Planner prompt from ${user}: ${prompt}`)
+
+  const chat = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [
+      { role: 'system', content: 'You are a fitness and diet planning assistant.' },
+      { role: 'user', content: prompt }
+    ]
+  })
+
+  const response = chat.choices[0].message.content
+  logger.info(`AI ${type} plan for ${user}: ${response}`)
+  
+  await emit({
+    topic: 'send-whatsapp-message-request', 
+    data: {
+      user,
+      message: response
+    }
+  })
+}
+</code></pre><p>The beauty of this approach is that it passes the user's original message directly to GPT-4o. So "suggest a low-carb dinner for weight loss" gets the full context, not just "meal planning request."</p><h3 id="creating-the-health-habit-analyzer">Creating the Health Habit Analyzer</h3><p>The analyzer is more complex - it pulls data from SQLite and uses templates to create structured prompts:</p><p><strong>Create <code>steps/analyzer.step.ts</code>:</strong></p><pre><code class="language-tsx">import { EventConfig, Handlers } from 'motia'
+import { z } from 'zod'
+import OpenAI from 'openai'
+import sqlite3 from 'sqlite3'
+import { open } from 'sqlite'
+import Mustache from 'mustache'
+import fs from 'fs/promises';
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! })
+
+const schema = z.object({
+  user: z.string()
+})
+
+export const config: EventConfig = {
+  type: 'event',
+  name: 'habit-analyzer',
+  description: 'Analyze user health activity from SQLite and summarize',
+  subscribes: ['analyze-user-habits'],
+  emits: ['send-whatsapp-message-request'],
+  input: schema,
+  flows: ['health-companion']
+}
+</code></pre><h3 id="using-sqlite-data-for-analysis">Using SQLite Data for Analysis</h3><p>The analyzer first pulls the user's recent activity logs:</p><pre><code class="language-tsx">export const handler: Handlers['habit-analyzer'] = async (input, { logger, emit }) =&gt; {
+  const { user } = input
+  logger.info(`Analyzing tracker logs for user: ${user}`)
+
+  const db = await open({ filename: 'health_data.db', driver: sqlite3.Database })
+  const logs = await db.all('SELECT * FROM tracker WHERE user = ? ORDER BY timestamp DESC LIMIT 10', [user])
+
+  if (!logs.length) {
+    const msg = 'No activity logs found to analyze.'
+    logger.info(msg)
+    
+    await emit({
+      topic: 'send-whatsapp-message-request',
+      data: {
+        user,
+        message: msg
+      }
+    })
+    return
+  }
+</code></pre><p>This grabs the last 10 activity entries for the user. If there's no data, it sends a helpful message explaining that.</p><h3 id="using-mustache-templates-for-insights">Using Mustache Templates for Insights</h3><p>Instead of building prompts in code, we use templates for clean, maintainable AI prompts:</p><p><strong>Create <code>prompts/analyze-health.mustache</code>:</strong></p><pre><code class="language-tsx">Analyze the following health activity logs and provide suggestions or insights for improvement:
+
+{{#logs}}
+- Date: {{timestamp}}, Weight: {{weight}}, Workout: {{workout}}, Meal: {{meal}}
+{{/logs}}
+</code></pre><p>The analyzer loads this template and fills it with user data:</p><pre><code class="language-tsx">const template = await fs.readFile('prompts/analyze-health.mustache', 'utf-8');
+  const prompt = Mustache.render(template, { logs });
+
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [
+      { role: 'system', content: 'You are a health coach helping users reflect on their habits.' },
+      { role: 'user', content: prompt }
+    ]
+  });
+
+  const summary = response.choices[0].message.content
+  logger.info('Insight received from AI', { user, summary })
+  
+  await emit({
+    topic: 'send-whatsapp-message-request',
+    data: {
+      user,
+      message: summary
+    }
+  })
+</code></pre><h2 id="fifth-step-responding-through-whatsapp">Fifth Step: Responding Through WhatsApp</h2><p>This step handles all outgoing WhatsApp messages - confirmations, meal plans, habit analysis, and error messages.</p><h3 id="setting-up-whatsapp-message-sending">Setting Up WhatsApp Message Sending</h3><p><strong>Create <code>steps/send-whatsapp-message.step.ts</code>:</strong></p><pre><code class="language-tsx">import { EventConfig, Handlers } from 'motia'
+import { z } from 'zod'
+import axios from 'axios'
+
+const token = process.env.WHATSAPP_TOKEN!
+const phoneNumberId = process.env.PHONE_NUMBER_ID!
+const userPhone = process.env.RECEIVER_PHONE!
+
+const schema = z.object({
+  message: z.string(),        
+  user: z.string().optional()  
+})
+
+export const config: EventConfig = {
+  type: 'event',
+  name: 'send-whatsapp-message',
+  description: 'Send a WhatsApp message via Cloud API (event-driven)',
+  subscribes: ['send-whatsapp-message-request'], 
+  emits: [],
+  input: schema,
+  flows: ['health-companion']
+}
+</code></pre><p>This step listens for <code>send-whatsapp-message-request</code> events from all other parts of the system.</p><h3 id="handling-message-delivery">Handling Message Delivery</h3><p>The handler formats messages for WhatsApp's API and sends them:</p><pre><code class="language-tsx">export const handler: Handlers['send-whatsapp-message'] = async (input, { logger }) =&gt; {
+  const { message, user } = input
+
+  if (!message || typeof message !== 'string') {
+    logger.warn('Invalid or empty message received.')
+    return
+  }
+
+  const payload = {
+    messaging_product: 'whatsapp',
+    to: user || userPhone, 
+    text: { body: message }
+  }
+
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  }
+
+  try {
+    const response = await axios.post(
+      `https://graph.facebook.com/v18.0/${phoneNumberId}/messages`,
+      payload,
+      { headers }
+    )
+
+    logger.info(`WhatsApp message sent to ${payload.to}: ${response.status}`)
+  } catch (error: any) {
+    const errRes = error.response?.data || error.message
+    logger.error('WhatsApp Send Error:', errRes)
+  }
+}
+</code></pre><h3 id="api-token-and-phone-configuration">API Token and Phone Configuration</h3><p>The step uses environment variables for WhatsApp Cloud API credentials:</p><ul><li><strong>WHATSAPP_TOKEN</strong>: Bearer token from Meta Developer Console</li><li><strong>PHONE_NUMBER_ID</strong>: Your WhatsApp Business phone number ID</li><li><strong>RECEIVER_PHONE</strong>: Fallback phone number for testing</li></ul><h3 id="error-handling-and-message-formatting">Error Handling and Message Formatting</h3><p>The system handles several error cases:</p><ul><li><strong>Empty messages</strong>: Log warning and skip</li><li><strong>API failures</strong>: Log full error details for debugging</li><li><strong>Missing user</strong>: Falls back to <code>RECEIVER_PHONE</code> from environment</li><li><strong>Invalid tokens</strong>: Logs authentication errors</li></ul><p>WhatsApp expects a specific JSON format:</p><pre><code class="language-tsx">{
+  "messaging_product": "whatsapp",
+  "to": "+1234567890",
+  "text": { "body": "Your message text here" }
+}
+</code></pre><p>Every part of the system that needs to respond (planner, analyzer, confirmation, chat) emits the same <code>send-whatsapp-message-request</code> event. This single step handles all outgoing messages, making the system simple and consistent.</p><h2 id="running-the-complete-project">Running the Complete Project</h2><p>Now that you've built all the components, let's see the AI health agent in action. This section shows how to start the system and demonstrates real WhatsApp conversations with the agent.</p><h3 id="starting-the-system">Starting the System</h3><p>First, start your Motia development server:</p><pre><code class="language-bash">npm run dev
+</code></pre><figure class="kg-card kg-image-card"><img src="https://blog.motia.dev/content/images/2025/08/image-1.png" class="kg-image" alt="" loading="lazy" width="907" height="297" srcset="https://blog.motia.dev/content/images/size/w600/2025/08/image-1.png 600w, https://blog.motia.dev/content/images/2025/08/image-1.png 907w" sizes="(min-width: 720px) 720px"></figure><p>The logs show all your steps being created - webhook handler, intent classifier, planner, analyzer, and message sender. When you see "Server ready and listening on port 3000," your system is running. Next, expose your local server with ngrok:</p><pre><code class="language-bash">ngrok http 3000
+</code></pre><figure class="kg-card kg-image-card"><img src="https://blog.motia.dev/content/images/2025/08/image-2.png" class="kg-image" alt="" loading="lazy" width="904" height="229" srcset="https://blog.motia.dev/content/images/size/w600/2025/08/image-2.png 600w, https://blog.motia.dev/content/images/2025/08/image-2.png 904w" sizes="(min-width: 720px) 720px"></figure><p>Copy the <code>ngrok</code> URL and register <code>https://your-ngrok-url.app/webhook</code> as your webhook URL in the Meta Developer Console.</p><h3 id="testing-activity-logging">Testing Activity Logging</h3><p>Send a simple activity message to test the logging flow:</p><figure class="kg-card kg-image-card"><img src="https://blog.motia.dev/content/images/2025/08/image-5.png" class="kg-image" alt="" loading="lazy" width="907" height="451" srcset="https://blog.motia.dev/content/images/size/w600/2025/08/image-5.png 600w, https://blog.motia.dev/content/images/2025/08/image-5.png 907w" sizes="(min-width: 720px) 720px"></figure><p>ngrok log:</p><figure class="kg-card kg-image-card"><img src="https://blog.motia.dev/content/images/2025/08/image-4.png" class="kg-image" alt="" loading="lazy" width="907" height="437" srcset="https://blog.motia.dev/content/images/size/w600/2025/08/image-4.png 600w, https://blog.motia.dev/content/images/2025/08/image-4.png 907w" sizes="(min-width: 720px) 720px"></figure><p>WhatsApp Interface chat:</p><figure class="kg-card kg-image-card"><img src="https://blog.motia.dev/content/images/2025/08/image-6.png" class="kg-image" alt="" loading="lazy" width="681" height="745" srcset="https://blog.motia.dev/content/images/size/w600/2025/08/image-6.png 600w, https://blog.motia.dev/content/images/2025/08/image-6.png 681w"></figure><p>The logs show the complete flow:</p><ol><li>Webhook receives the message</li><li>The intent classifier determines its activity logging</li><li>Data extractor pulls out "15km run"</li><li>Database logger saves to SQLite</li><li>Confirmation sent back to WhatsApp</li></ol><h3 id="testing-meal-planning">Testing Meal Planning</h3><p>Request a meal plan to see the AI planning system:</p><figure class="kg-card kg-image-card"><img src="https://blog.motia.dev/content/images/2025/08/image-7.png" class="kg-image" alt="" loading="lazy" width="907" height="546" srcset="https://blog.motia.dev/content/images/size/w600/2025/08/image-7.png 600w, https://blog.motia.dev/content/images/2025/08/image-7.png 907w" sizes="(min-width: 720px) 720px"></figure><p>WhatsApp Interface Chat:</p><figure class="kg-card kg-image-card"><img src="https://blog.motia.dev/content/images/2025/08/image-8.png" class="kg-image" alt="" loading="lazy" width="821" height="818" srcset="https://blog.motia.dev/content/images/size/w600/2025/08/image-8.png 600w, https://blog.motia.dev/content/images/2025/08/image-8.png 821w" sizes="(min-width: 720px) 720px"></figure><p>The system:</p><ol><li>Classifies the intent as "plan_meal"</li><li>GPT-4o generates a detailed breakfast plan</li><li>Sends the complete recipe back via WhatsApp</li></ol><h3 id="testing-complex-activity-extraction">Testing Complex Activity Extraction</h3><p>Send a message with multiple data points.</p><p>Prompt: &nbsp;I weighed 72kg today, had a spinach salad for lunch, and did a 20-minute jog</p><figure class="kg-card kg-image-card"><img src="https://blog.motia.dev/content/images/2025/08/image-9.png" class="kg-image" alt="" loading="lazy" width="907" height="546" srcset="https://blog.motia.dev/content/images/size/w600/2025/08/image-9.png 600w, https://blog.motia.dev/content/images/2025/08/image-9.png 907w" sizes="(min-width: 720px) 720px"></figure><p>The data extractor successfully pulls out:</p><ul><li>Weight: 72kg</li><li>Meal: spinach salad</li><li>Workout: 20-minute jog</li></ul><figure class="kg-card kg-image-card"><img src="https://blog.motia.dev/content/images/2025/08/image-10.png" class="kg-image" alt="" loading="lazy" width="800" height="843" srcset="https://blog.motia.dev/content/images/size/w600/2025/08/image-10.png 600w, https://blog.motia.dev/content/images/2025/08/image-10.png 800w" sizes="(min-width: 720px) 720px"></figure><p>All three pieces of data are saved to the database in a single interaction.</p><h3 id="testing-habit-analysis">Testing Habit Analysis</h3><p>Request an analysis of your logged activities.</p><p>Prompt: please do a complete analysis</p><figure class="kg-card kg-image-card"><img src="https://blog.motia.dev/content/images/2025/08/image-11.png" class="kg-image" alt="" loading="lazy" width="906" height="580" srcset="https://blog.motia.dev/content/images/size/w600/2025/08/image-11.png 600w, https://blog.motia.dev/content/images/2025/08/image-11.png 906w" sizes="(min-width: 720px) 720px"></figure><p>The habit analyzer:</p><ol><li>Pulls your recent activity logs from SQLite</li><li>Uses GPT-4o to analyze patterns and trends</li><li>Provides personalized insights and recommendations</li><li>Sends detailed feedback via WhatsApp</li></ol><figure class="kg-card kg-image-card"><img src="https://blog.motia.dev/content/images/2025/08/image-12.png" class="kg-image" alt="" loading="lazy" width="742" height="833" srcset="https://blog.motia.dev/content/images/size/w600/2025/08/image-12.png 600w, https://blog.motia.dev/content/images/2025/08/image-12.png 742w" sizes="(min-width: 720px) 720px"></figure><p>Check out Motia GitHub Repo for more such examples:</p><figure class="kg-card kg-bookmark-card"><a class="kg-bookmark-container" href="https://github.com/MotiaDev/motia-examples/tree/main/examples/ai-health-fitness?ref=blog.motia.dev"><div class="kg-bookmark-content"><div class="kg-bookmark-title">motia-examples/examples/ai-health-fitness at main · MotiaDev/motia-examples</div><div class="kg-bookmark-description">A community maintained list of flow examples built with Motia - MotiaDev/motia-examples</div><div class="kg-bookmark-metadata"><img class="kg-bookmark-icon" src="https://blog.motia.dev/content/images/icon/pinned-octocat-093da3e6fa40-3.svg" alt=""><span class="kg-bookmark-author">GitHub</span><span class="kg-bookmark-publisher">MotiaDev</span></div></div><div class="kg-bookmark-thumbnail"><img src="https://blog.motia.dev/content/images/thumbnail/motia-examples-2" alt="" onerror="this.style.display = 'none'"></div></a></figure><h2 id="conclusion">Conclusion</h2><p>You've built a complete AI health agent that works entirely through WhatsApp. The system handles natural language messages, extracts structured data, generates personalized plans, and analyzes health patterns, all using Motia's event-driven architecture.</p><p>The key benefits of this approach:</p><ul><li><strong>One conversation interface</strong> - Users don't need another app</li><li><strong>Event-driven reliability</strong> - Each step does one job well</li><li><strong>Easy to extend</strong> - Add new features by creating new steps</li><li><strong>AI-powered intelligence</strong> - Understands casual text and responds naturally</li></ul><p>The event-driven architecture makes it simple to add new features like sleep tracking, medication reminders, or progress photos. All you need to do is just create new steps that listen for the right events and emit responses.</p>
+        </div>
+
+            <div class="article-tags">
+                <div class="article-tags__cloud tagcloud"><a href="/tag/developer/">developer</a><a href="/tag/whatsapp/">whatsapp</a><a href="/tag/api/">api</a><a href="/tag/workflow/">workflow</a><a href="/tag/templates/">templates</a><a href="/tag/backend/">backend</a><a href="/tag/motia/">motia</a></div>
+            </div>
+
+            <div class="article-sharing">
+                <div class="sharing-buttons">
+    <h4 class="sharing-buttons__title meta-title">Share with friends</h4>
+    <ul class="sharing-buttons__list">
+        <li class="sharing-buttons__list-item">
+            <a href="https://www.facebook.com/sharer.php?u=https://blog.motia.dev/building-a-whatsapp-ai-health-and-fitness-agent-with-motia-and-openai/" title="Share on Facebook" target="_blank" rel="noopener" class="sharing-buttons__list-link" data-social="facebook"><svg width="24" height="24" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M12 2C6.5 2 2 6.5 2 12c0 5 3.7 9.1 8.4 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.3v7C18.3 21.1 22 17 22 12c0-5.5-4.5-10-10-10z" fill="currentColor"></path></svg>
+</a>
+        </li>
+        <li class="sharing-buttons__list-item">
+            <a href="https://twitter.com/intent/tweet?url=https://blog.motia.dev/building-a-whatsapp-ai-health-and-fitness-agent-with-motia-and-openai/&amp;text=Building%20a%20WhatsApp%20AI%20Health%20and%20Fitness%20Agent%20with%20Motia%20and%20OpenAI" title="Share on Twitter" target="_blank" rel="noopener" class="sharing-buttons__list-link" data-social="twitter"><svg width="24" height="24" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M22.23,5.924c-0.736,0.326-1.527,0.547-2.357,0.646c0.847-0.508,1.498-1.312,1.804-2.27 c-0.793,0.47-1.671,0.812-2.606,0.996C18.324,4.498,17.257,4,16.077,4c-2.266,0-4.103,1.837-4.103,4.103 c0,0.322,0.036,0.635,0.106,0.935C8.67,8.867,5.647,7.234,3.623,4.751C3.27,5.357,3.067,6.062,3.067,6.814 c0,1.424,0.724,2.679,1.825,3.415c-0.673-0.021-1.305-0.206-1.859-0.513c0,0.017,0,0.034,0,0.052c0,1.988,1.414,3.647,3.292,4.023 c-0.344,0.094-0.707,0.144-1.081,0.144c-0.264,0-0.521-0.026-0.772-0.074c0.522,1.63,2.038,2.816,3.833,2.85 c-1.404,1.1-3.174,1.756-5.096,1.756c-0.331,0-0.658-0.019-0.979-0.057c1.816,1.164,3.973,1.843,6.29,1.843 c7.547,0,11.675-6.252,11.675-11.675c0-0.178-0.004-0.355-0.012-0.531C20.985,7.47,21.68,6.747,22.23,5.924z" fill="currentColor"></path></svg>
+</a>
+        </li>
+        <li class="sharing-buttons__list-item">
+            <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https://blog.motia.dev/building-a-whatsapp-ai-health-and-fitness-agent-with-motia-and-openai/&amp;title=Building%20a%20WhatsApp%20AI%20Health%20and%20Fitness%20Agent%20with%20Motia%20and%20OpenAI" title="Share on LinkedIn" target="_blank" rel="noopener" class="sharing-buttons__list-link" data-social="linkedin"><svg width="24" height="24" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M19.7,3H4.3C3.582,3,3,3.582,3,4.3v15.4C3,20.418,3.582,21,4.3,21h15.4c0.718,0,1.3-0.582,1.3-1.3V4.3 C21,3.582,20.418,3,19.7,3z M8.339,18.338H5.667v-8.59h2.672V18.338z M7.004,8.574c-0.857,0-1.549-0.694-1.549-1.548 c0-0.855,0.691-1.548,1.549-1.548c0.854,0,1.547,0.694,1.547,1.548C8.551,7.881,7.858,8.574,7.004,8.574z M18.339,18.338h-2.669 v-4.177c0-0.996-0.017-2.278-1.387-2.278c-1.389,0-1.601,1.086-1.601,2.206v4.249h-2.667v-8.59h2.559v1.174h0.037 c0.356-0.675,1.227-1.387,2.526-1.387c2.703,0,3.203,1.779,3.203,4.092V18.338z" fill="currentColor"></path></svg>
+</a>
+        </li>
+        <li class="sharing-buttons__list-item">
+            <button class="sharing-buttons__list-link" title="Copy link" data-social="copy-link" data-copy-link="https://blog.motia.dev/building-a-whatsapp-ai-health-and-fitness-agent-with-motia-and-openai/">
+                <svg width="24" height="24" version="1.1" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path d="M579.8 267.7c56.5-56.5 56.5-148 0-204.5c-50-50-128.8-56.5-186.3-15.4l-1.6 1.1c-14.4 10.3-17.7 30.3-7.4 44.6s30.3 17.7 44.6 7.4l1.6-1.1c32.1-22.9 76-19.3 103.8 8.6c31.5 31.5 31.5 82.5 0 114L422.3 334.8c-31.5 31.5-82.5 31.5-114 0c-27.9-27.9-31.5-71.8-8.6-103.8l1.1-1.6c10.3-14.4 6.9-34.4-7.4-44.6s-34.4-6.9-44.6 7.4l-1.1 1.6C206.5 251.2 213 330 263 380c56.5 56.5 148 56.5 204.5 0L579.8 267.7zM60.2 244.3c-56.5 56.5-56.5 148 0 204.5c50 50 128.8 56.5 186.3 15.4l1.6-1.1c14.4-10.3 17.7-30.3 7.4-44.6s-30.3-17.7-44.6-7.4l-1.6 1.1c-32.1 22.9-76 19.3-103.8-8.6C74 372 74 321 105.5 289.5L217.7 177.2c31.5-31.5 82.5-31.5 114 0c27.9 27.9 31.5 71.8 8.6 103.9l-1.1 1.6c-10.3 14.4-6.9 34.4 7.4 44.6s34.4 6.9 44.6-7.4l1.1-1.6C433.5 260.8 427 182 377 132c-56.5-56.5-148-56.5-204.5 0L60.2 244.3z" fill="currentColor"/></svg>
+                <span class="sharing-buttons__tooltip" role="tooltip" aria-hidden="true">Link copied</span>
+            </button>
+        </li>
+    </ul>
+</div>
+            </div>
+
+            <div class="article-authors">
+                    <div class="author-box" data-author-bio="true">
+        <a href="/author/rohit-ghumare/" aria-hidden="true" tabindex="-1" class="author-box__avatar">
+                <figure class="author-box__avatar-figure">
+                    <img width="70" height="70" class="author-box__avatar-image" src="/content/images/size/w364/2025/07/AVATAR_0001_2.png" alt="Motia Team" loading="lazy">
+                </figure>
+        </a>
+        <div class="author-box__info">
+            <h5 class="author-box__name">
+                <span class="visually-hidden">Posted by</span>
+                <a href="/author/rohit-ghumare/" class="author-box__name-link">Motia Team</a>
+            </h5>
+                <p class="author-box__description">Head of Developer Relations</p>
+        </div>
+    </div>
+            </div>
+
+                <div class="article-newsletter">
+                    <div class="newsletter-box">
+    <h3 class="newsletter-box__title meta-title">Stay in the loop</h3>
+    <p class="newsletter-box__info">Get the latest updates about Motia - Modern Unified Backend Framework!</p>
+    <form class="newsletter-box__form" data-members-form="signup" data-theme="reset">
+        <div class="newsletter-box__form-field">
+            <label for="newsletter-box-email-input" class="visually-hidden">Enter your email</label>
+            <input id="newsletter-box-email-input" class="newsletter-box__form-input" type="email" name="email" placeholder="Enter your email" required data-members-email>
+            <button class="newsletter-box__form-submit" type="submit">Subscribe</button>
+        </div>
+        <p class="newsletter-box__message" data-message="loading">Processing your application...</p>
+        <p class="newsletter-box__message" data-message="success">Success! Please check your inbox and click the link to confirm your subscription.</p>
+        <p class="newsletter-box__message" data-message="error">Sorry, something went wrong. Please try again.</p>
+    </form>
+</div>
+                </div>
+    </div>
+
+    <footer class="article-footer">
+            
+<div class="related-posts section" data-canvas-grid="container">
+    <h3 class="related-posts__title section-title">You might also like</h3>
+    <div class="related-posts__grid grid">
+            <article class="post-card post tag-backend tag-motia tag-aws tag-s3 tag-developer tag-typescript tag-nodejs tag-workflow" data-layout="" data-has-featured-image="true">
+
+    
+    <a href="/building-a-lightning-fast-image-resizer-with-motia-and-aws-s3/" class="post-card__media" tabindex="-1">
+        <picture class="post-card__figure">
+            <source
+                srcset="/content/images/size/w364/format/webp/2025/08/Blog-Thumbanail@4x-2.png 364w,/content/images/size/w562/format/webp/2025/08/Blog-Thumbanail@4x-2.png 562w,/content/images/size/w760/format/webp/2025/08/Blog-Thumbanail@4x-2.png 760w,/content/images/size/w958/format/webp/2025/08/Blog-Thumbanail@4x-2.png 958w,/content/images/size/w1160/format/webp/2025/08/Blog-Thumbanail@4x-2.png 1160w,/content/images/size/w1520/format/webp/2025/08/Blog-Thumbanail@4x-2.png 1520w,/content/images/size/w1916/format/webp/2025/08/Blog-Thumbanail@4x-2.png 1916w"
+                sizes="(min-width: 1280px) 265px, (min-width: 1000px) 25vw, (min-width: 600px) 50vw, 44vw">
+            <img class="post-card__image"
+                width="5" height="3"
+                src="/content/images/size/w760/format/webp/2025/08/Blog-Thumbanail@4x-2.png"
+                loading="lazy"
+                alt="Building a Lightning-Fast Image Resizer with Motia and AWS S3"
+                onload="this.setAttribute('data-loaded', true)">
+        </picture>
+    </a>
+
+    <div class="post-card__content">
+            <a href="/tag/backend/" class="post-card__primary-tag" rel="tag">backend</a>
+        <a href="/building-a-lightning-fast-image-resizer-with-motia-and-aws-s3/" class="post-card__content-link">
+            <h2 class="post-card__title">
+                <span class="post-card__title-inner">Building a Lightning-Fast Image Resizer with Motia and AWS S3</span>
+            </h2>
+            
+        </a>
+        <div class="post-card__footer">
+                <span class="post-card__meta post-card__meta--author">
+        <span class="post-card__meta-info">By</span>
+        <a href="https://blog.motia.dev/author/rohit-ghumare/" class="post-card__meta-link">Motia Team</a>
+    </span>
+
+                <time class="post-card__meta post-card__meta--date" datetime="2025-08-18">Aug 18, 2025</time>
+
+            <span class="post-card__meta post-card__meta--read-time">19 min read</span>
+        </div>
+    </div>
+
+</article>
+            <article class="post-card post tag-twitter tag-tweet tag-devto-2 tag-developer tag-viral" data-layout="" data-has-featured-image="true">
+
+    
+    <a href="/how-to-turn-dev-to-blogs-into-viral-tweets/" class="post-card__media" tabindex="-1">
+        <picture class="post-card__figure">
+            <source
+                srcset="/content/images/size/w364/format/webp/2025/07/Blog-Thumbanail@2x.png 364w,/content/images/size/w562/format/webp/2025/07/Blog-Thumbanail@2x.png 562w,/content/images/size/w760/format/webp/2025/07/Blog-Thumbanail@2x.png 760w,/content/images/size/w958/format/webp/2025/07/Blog-Thumbanail@2x.png 958w,/content/images/size/w1160/format/webp/2025/07/Blog-Thumbanail@2x.png 1160w,/content/images/size/w1520/format/webp/2025/07/Blog-Thumbanail@2x.png 1520w,/content/images/size/w1916/format/webp/2025/07/Blog-Thumbanail@2x.png 1916w"
+                sizes="(min-width: 1280px) 265px, (min-width: 1000px) 25vw, (min-width: 600px) 50vw, 44vw">
+            <img class="post-card__image"
+                width="5" height="3"
+                src="/content/images/size/w760/format/webp/2025/07/Blog-Thumbanail@2x.png"
+                loading="lazy"
+                alt="How to turn Dev.to blogs into Viral Tweets 🔥"
+                onload="this.setAttribute('data-loaded', true)">
+        </picture>
+    </a>
+
+    <div class="post-card__content">
+            <a href="/tag/twitter/" class="post-card__primary-tag" rel="tag">twitter</a>
+        <a href="/how-to-turn-dev-to-blogs-into-viral-tweets/" class="post-card__content-link">
+            <h2 class="post-card__title">
+                <span class="post-card__title-inner">How to turn Dev.to blogs into Viral Tweets 🔥</span>
+            </h2>
+            
+        </a>
+        <div class="post-card__footer">
+                <span class="post-card__meta post-card__meta--author">
+        <span class="post-card__meta-info">By</span>
+        <a href="https://blog.motia.dev/author/rohit-ghumare/" class="post-card__meta-link">Motia Team</a>
+    </span>
+
+                <time class="post-card__meta post-card__meta--date" datetime="2025-07-15">Jul 15, 2025</time>
+
+            <span class="post-card__meta post-card__meta--read-time">10 min read</span>
+        </div>
+    </div>
+
+</article>
+    </div>
+</div>
+
+
+        
+            <div class="article-comments section" data-canvas-grid="content">
+                <div class="comments">
+                    
+        <script defer src="https://cdn.jsdelivr.net/ghost/comments-ui@~1.2/umd/comments-ui.min.js" data-locale="en" data-ghost-comments="https://blog.motia.dev/" data-api="https://motia.ghost.io/ghost/api/content/" data-admin="https://motia.ghost.io/ghost/" data-key="60a5c5eb6662c8dc6942620537" data-title="null" data-count="true" data-post-id="688ccfffc8bdf300017dedd7" data-color-scheme="auto" data-avatar-saturation="60" data-accent-color="#2f7eff" data-comments-enabled="all" data-publication="Motia" crossorigin="anonymous"></script>
+    
+                </div>
+            </div>
+    </footer>
+
+</article>
+
+
+        </main>
+
+        <footer id="site-footer" class="site-footer" data-canvas-grid="container">
+
+    <div class="site-footer__content">
+
+        <div class="site-footer__navigation">
+                <nav class="nav-secondary">
+        <ul class="nav-secondary__menu">
+            <li class="nav-secondary__menu-item">
+                <a class="nav-secondary__menu-link" href="#/portal/">
+                    <span class="nav-secondary__menu-title">Sign up</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+        </div>
+
+            <div class="site-footer__socials">
+                <div class="socials">
+        <a href="https://www.youtube.com/@MotiaDev" aria-label="Follow on youtube" target="_blank" rel="noopener noreferrer" class="socials__link" data-social="youtube"><svg width="24" height="24" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M21.8,8.001c0,0-0.195-1.378-0.795-1.985c-0.76-0.797-1.613-0.801-2.004-0.847c-2.799-0.202-6.997-0.202-6.997-0.202 h-0.009c0,0-4.198,0-6.997,0.202C4.608,5.216,3.756,5.22,2.995,6.016C2.395,6.623,2.2,8.001,2.2,8.001S2,9.62,2,11.238v1.517 c0,1.618,0.2,3.237,0.2,3.237s0.195,1.378,0.795,1.985c0.761,0.797,1.76,0.771,2.205,0.855c1.6,0.153,6.8,0.201,6.8,0.201 s4.203-0.006,7.001-0.209c0.391-0.047,1.243-0.051,2.004-0.847c0.6-0.607,0.795-1.985,0.795-1.985s0.2-1.618,0.2-3.237v-1.517 C22,9.62,21.8,8.001,21.8,8.001z M9.935,14.594l-0.001-5.62l5.404,2.82L9.935,14.594z" fill="currentColor"></path></svg>
+</a>
+        <a href="https://www.linkedin.com/company/motiadev/" aria-label="Follow on linkedin" target="_blank" rel="noopener noreferrer" class="socials__link" data-social="linkedin"><svg width="24" height="24" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M19.7,3H4.3C3.582,3,3,3.582,3,4.3v15.4C3,20.418,3.582,21,4.3,21h15.4c0.718,0,1.3-0.582,1.3-1.3V4.3 C21,3.582,20.418,3,19.7,3z M8.339,18.338H5.667v-8.59h2.672V18.338z M7.004,8.574c-0.857,0-1.549-0.694-1.549-1.548 c0-0.855,0.691-1.548,1.549-1.548c0.854,0,1.547,0.694,1.547,1.548C8.551,7.881,7.858,8.574,7.004,8.574z M18.339,18.338h-2.669 v-4.177c0-0.996-0.017-2.278-1.387-2.278c-1.389,0-1.601,1.086-1.601,2.206v4.249h-2.667v-8.59h2.559v1.174h0.037 c0.356-0.675,1.227-1.387,2.526-1.387c2.703,0,3.203,1.779,3.203,4.092V18.338z" fill="currentColor"></path></svg>
+</a>
+</div>
+
+            </div>
+
+        <p class="site-footer__copyright">
+            © Motia 2025
+        </p>
+    </div>
+
+</footer>
+
+    </div><!-- .site -->
+
+    <script defer src="https://blog.motia.dev/assets/dist/main.js?v=1cf9617688"></script>
+
+    
+
+</body>
+
+</html>
