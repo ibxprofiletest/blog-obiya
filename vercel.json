@@ -26,7 +26,35 @@
     {
       "src": "/tag/backend/",
       "dest": "/tag/backend.html"
-  },
+    },
+    {
+      "src": "/tag/aws/",
+      "dest": "/tag/aws.html"
+    },
+    {
+      "src": "/tag/developer/",
+      "dest": "/tag/developer.html"
+    },
+    {
+      "src": "/tag/motia/",
+      "dest": "/tag/motia.html"
+    },
+    {
+      "src": "/tag/s3/",
+      "dest": "/tag/s3.html"
+    },
+    {
+      "src": "/tag/typescript/",
+      "dest": "/tag/typescript.html"
+    },
+    {
+      "src": "/tag/nodejs/",
+      "dest": "/tag/nodejs.html"
+    },
+    {
+      "src": "/tag/workflow/",
+      "dest": "/tag/workflow.html"
+    },
     {
         "src": "/content/images/size/w562/format/webp/2025/08/Blog-Thumbanail@4x-2.png",
         "dest": "/content/images/size/w562/format/webp/2025/08/Blog-Thumbanail@4x-2.png"
