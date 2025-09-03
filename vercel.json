@@ -56,6 +56,38 @@
       "dest": "/tag/workflow.html"
     },
     {
+      "src": "/tag/whatsapp/",
+      "dest": "/tag/whatsapp.html"
+    },
+    {
+      "src": "/tag/twitter/",
+      "dest": "/tag/twitter.html"
+    },
+    {
+      "src": "/tag/tweet/",
+      "dest": "/tag/tweet.html"
+    },
+    {
+      "src": "/tag/devto-2/",
+      "dest": "/tag/devto-2.html"
+    },
+    {
+      "src": "/tag/viral/",
+      "dest": "/tag/viral.html"
+    },
+    {
+      "src": "/tag/templates/",
+      "dest": "/tag/templates.html"
+    },
+    {
+      "src": "/tag/openai/",
+      "dest": "/tag/openai.html"
+    },
+    {
+      "src": "/tag/api/",
+      "dest": "/tag/api.html"
+    },
+    {
         "src": "/content/images/size/w562/format/webp/2025/08/Blog-Thumbanail@4x-2.png",
         "dest": "/content/images/size/w562/format/webp/2025/08/Blog-Thumbanail@4x-2.png"
     }
