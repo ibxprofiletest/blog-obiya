@@ -88,8 +88,8 @@
       "dest": "/tag/api.html"
     },
     {
-        "src": "/content/images/size/w562/format/webp/2025/08/Blog-Thumbanail@4x-2.png",
-        "dest": "/content/images/size/w562/format/webp/2025/08/Blog-Thumbanail@4x-2.png"
+        "src": "https://blog.obiya.dev/blog1.png",
+        "dest": "https://blog.obiya.dev/blog1.png"
     }
   ]
 }
